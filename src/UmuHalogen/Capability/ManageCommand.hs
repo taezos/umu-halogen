@@ -28,6 +28,7 @@ genProj mLoc = do
   writeTestMainFile mLoc
   writeComponentDir mLoc
   writeTitleComponentFile mLoc
+  writePackageJson mLoc
 
 writeSrcDir :: MonadIO m => Maybe Text -> m ()
 writeSrcDir mLoc = do
@@ -84,6 +85,12 @@ writeTitleComponentFile mLoc = do
   titleComponent <- liftIO $ TIO.readFile "./templates/TitleComponent.purs"
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Component/Title.purs" ) titleComponent
   message $ "Generating src/Component/Title.purs..."
+
+writePackageJson :: MonadIO m => Maybe Text -> m ()
+writePackageJson mLoc = do
+  packageJson <- liftIO $ TIO.readFile "./templates/package.json"
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "package.json" ) packageJson
+  message $ "Generating package.json..."
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mLoc fileName =
