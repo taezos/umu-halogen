@@ -26,6 +26,8 @@ genProj mLoc = do
   writeIndexHTML mLoc
   writeTestDir mLoc
   writeTestMainFile mLoc
+  writeComponentDir mLoc
+  writeTitleComponentFile mLoc
 
 writeSrcDir :: MonadIO m => Maybe Text -> m ()
 writeSrcDir mLoc = do
@@ -72,6 +74,16 @@ writeTestMainFile mLoc = do
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/test/Main.purs" ) testMainFile
   message $ "Generating test/Main.purs..."
 
+writeComponentDir :: MonadIO m => Maybe Text -> m ()
+writeComponentDir mLoc = do
+  liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "/src/Component" )
+  message $ "Generating src/Component..."
+
+writeTitleComponentFile :: MonadIO m => Maybe Text -> m ()
+writeTitleComponentFile mLoc = do
+  titleComponent <- liftIO $ TIO.readFile "./templates/TitleComponent.purs"
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Component/Title.purs" ) titleComponent
+  message $ "Generating src/Component/Title.purs..."
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mLoc fileName =
