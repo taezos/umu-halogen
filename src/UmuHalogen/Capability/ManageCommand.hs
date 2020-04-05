@@ -32,6 +32,7 @@ genProj mLoc = do
   writeComponentDir mLoc
   writeTitleComponentFile mLoc
   writePackageJson mLoc
+  writeMakeFile mLoc
 
 writeSrcDir :: MonadIO m => Maybe Text -> m ()
 writeSrcDir mLoc = do
@@ -87,6 +88,11 @@ writePackageJson :: MonadIO m => Maybe Text -> m ()
 writePackageJson mLoc = do
   liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "package.json" ) packageJsonFile
   message $ "Generating package.json..."
+
+writeMakeFile :: MonadIO m => Maybe Text -> m ()
+writeMakeFile mLoc = do
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "Makefile" ) makeFile
+  message $ "Generating Makefile..."
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mLoc fileName =

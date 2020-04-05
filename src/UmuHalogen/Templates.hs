@@ -25,3 +25,6 @@ testMainFile = $(embedFileUtf8 "templates/TestMain.purs")
 
 titleComponentFile :: Text
 titleComponentFile = $(embedFileUtf8 "templates/TitleComponent.purs")
+
+makeFile :: Text
+makeFile = $(embedFileUtf8 "templates/Makefile")
