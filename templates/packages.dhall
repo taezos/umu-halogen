@@ -32,7 +32,7 @@ Purpose:
 
 Syntax:
 Replace the overrides' "{=}" (an empty record) with the following idea
-The "//" or "⫽" means "merge these two records and
+The "//" means "merge these two records and
   when they have the same value, use the one on the right:"
 -------------------------------
 let override =
