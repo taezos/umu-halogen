@@ -20,6 +20,8 @@ extra-source-files:  CHANGELOG.md
 library
   exposed-modules:     UmuHalogen
                      , UmuHalogen.Command
+                     , UmuHalogen.Templates
+                     , UmuHalogen.TH
                      , UmuHalogen.Capability.ManageCommand
   other-modules:       Import
                      , UmuHalogen.Util
@@ -34,6 +36,8 @@ library
                      , filepath
                      , directory
                      , ansi-terminal
+                     , file-embed
+                     , template-haskell
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude

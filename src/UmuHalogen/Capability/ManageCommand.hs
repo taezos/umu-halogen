@@ -4,10 +4,11 @@ module UmuHalogen.Capability.ManageCommand
   , ManageCommand (..)
   ) where
 
-import qualified Data.Text        as T
-import qualified Data.Text.IO     as TIO
+import qualified Data.Text            as T
+import qualified Data.Text.IO         as TIO
 import           Import
-import           System.Directory (createDirectory)
+import           System.Directory     (createDirectory)
+import           UmuHalogen.Templates
 import           UmuHalogen.Util
 
 class Monad m => ManageCommand m where
@@ -37,20 +38,17 @@ writeSrcDir mLoc = do
 
 writeSrcMainFile :: MonadIO m => Maybe Text -> m ()
 writeSrcMainFile mLoc = do
-  srcMainFile <- liftIO $ TIO.readFile "./templates/SrcMain.purs"
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Main.purs" ) srcMainFile
   message $ "Generating src/Main.purs..."
 
 writeSpagoFile :: MonadIO m => Maybe Text -> m ()
 writeSpagoFile mLoc = do
-  spagoFile <- liftIO $ TIO.readFile "./templates/spago.dhall"
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "spago.dhall" ) spagoFile
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "spago.dhall" ) spagoDhallFile
   message $ "Generating spago.dhall..."
 
 writePackagesFile :: MonadIO m => Maybe Text -> m ()
 writePackagesFile mLoc = do
-  packagesFile <- liftIO $ TIO.readFile "./templates/packages.dhall"
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "packages.dhall") packagesFile
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "packages.dhall") packagesDhallFile
   message $ "Generating packages.dhall..."
 
 writeHTMLDir :: MonadIO m => Maybe Text -> m ()
@@ -60,7 +58,6 @@ writeHTMLDir mLoc = do
 
 writeIndexHTML :: MonadIO m => Maybe Text -> m ()
 writeIndexHTML mLoc = do
-  indexHtmlFile <- liftIO $ TIO.readFile "./templates/index.html"
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/html/index.html" ) indexHtmlFile
   message $ "Generating html/index.html..."
 
@@ -71,7 +68,6 @@ writeTestDir mLoc = do
 
 writeTestMainFile :: MonadIO m => Maybe Text -> m ()
 writeTestMainFile mLoc = do
-  testMainFile <- liftIO $ TIO.readFile "./templates/TestMain.purs"
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/test/Main.purs" ) testMainFile
   message $ "Generating test/Main.purs..."
 
@@ -82,14 +78,12 @@ writeComponentDir mLoc = do
 
 writeTitleComponentFile :: MonadIO m => Maybe Text -> m ()
 writeTitleComponentFile mLoc = do
-  titleComponent <- liftIO $ TIO.readFile "./templates/TitleComponent.purs"
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Component/Title.purs" ) titleComponent
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Component/Title.purs" ) titleComponentFile
   message $ "Generating src/Component/Title.purs..."
 
 writePackageJson :: MonadIO m => Maybe Text -> m ()
 writePackageJson mLoc = do
-  packageJson <- liftIO $ TIO.readFile "./templates/package.json"
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "package.json" ) packageJson
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "package.json" ) packageJsonFile
   message $ "Generating package.json..."
 
 mkPathName :: Maybe Text -> Text -> Text
