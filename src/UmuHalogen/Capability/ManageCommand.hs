@@ -19,6 +19,7 @@ instance ManageCommand IO where
 genProj :: MonadIO m => Maybe Text -> m ()
 genProj mLoc = do
   writeSrcDir mLoc
+  writeSrcMainFile mLoc
   writeSpagoFile mLoc
   writePackagesFile mLoc
   writeHTMLDir mLoc
@@ -30,6 +31,12 @@ writeSrcDir :: MonadIO m => Maybe Text -> m ()
 writeSrcDir mLoc = do
   liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "src" )
   message $ "Generating src..."
+
+writeSrcMainFile :: MonadIO m => Maybe Text -> m ()
+writeSrcMainFile mLoc = do
+  srcMainFile <- liftIO $ TIO.readFile "./templates/SrcMain.purs"
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Main.purs" ) srcMainFile
+  message $ "Generating src/Main.purs..."
 
 writeSpagoFile :: MonadIO m => Maybe Text -> m ()
 writeSpagoFile mLoc = do
@@ -64,6 +71,7 @@ writeTestMainFile mLoc = do
   testMainFile <- liftIO $ TIO.readFile "./templates/TestMain.purs"
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/test/Main.purs" ) testMainFile
   message $ "Generating test/Main.purs..."
+
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mLoc fileName =
