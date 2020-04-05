@@ -23,6 +23,8 @@ genProj mLoc = do
   writePackagesFile mLoc
   writeHTMLDir mLoc
   writeIndexHTML mLoc
+  writeTestDir mLoc
+  writeTestMainFile mLoc
 
 writeSrcDir :: MonadIO m => Maybe Text -> m ()
 writeSrcDir mLoc = do
@@ -50,7 +52,18 @@ writeIndexHTML :: MonadIO m => Maybe Text -> m ()
 writeIndexHTML mLoc = do
   indexHtmlFile <- liftIO $ TIO.readFile "./templates/index.html"
   liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/html/index.html" ) indexHtmlFile
-  message $ "Generating index.html..."
+  message $ "Generating html/index.html..."
+
+writeTestDir :: MonadIO m => Maybe Text -> m ()
+writeTestDir mLoc = do
+  liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "test" )
+  message $ "Generating test..."
+
+writeTestMainFile :: MonadIO m => Maybe Text -> m ()
+writeTestMainFile mLoc = do
+  testMainFile <- liftIO $ TIO.readFile "./templates/TestMain.purs"
+  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/test/Main.purs" ) testMainFile
+  message $ "Generating test/Main.purs..."
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mLoc fileName =
