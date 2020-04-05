@@ -27,11 +27,7 @@ startApp = do
         generateProject mLoc
 
 instance MonadIO m => ManageCommand ( AppM m ) where
-  generateProject mLoc = do
-    writeSrc mLoc
-    writeSpagoFile mLoc
-    writePackagesFile mLoc
-
+  generateProject = genProj
 
 showHelpOnErrorExecParser :: ParserInfo a -> IO a
 showHelpOnErrorExecParser = customExecParser ( prefs showHelpOnError )
