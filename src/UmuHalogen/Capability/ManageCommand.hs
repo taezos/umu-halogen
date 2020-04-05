@@ -5,8 +5,9 @@ module UmuHalogen.Capability.ManageCommand
   ) where
 
 import           Import
+import           System.IO            (hSetEncoding, utf8)
 import qualified Turtle
-import           Turtle.Prelude       as TP
+import           Turtle.Prelude       as TP hiding (stderr, stdout)
 import           UmuHalogen.Templates
 import           UmuHalogen.Util
 
@@ -18,6 +19,8 @@ instance ManageCommand IO where
 
 genProj :: MonadIO m => Maybe Text -> m ()
 genProj mLoc = do
+  liftIO $ hSetEncoding stdout utf8
+  liftIO $ hSetEncoding stderr utf8
   writeSrcDir mLoc
   writeSrcMainFile mLoc
   writeSpagoFile mLoc
