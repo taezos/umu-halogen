@@ -33,11 +33,10 @@ library
                      , text
                      , bytestring
                      , optparse-applicative
-                     , filepath
-                     , directory
                      , ansi-terminal
                      , file-embed
                      , template-haskell
+                     , turtle
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude

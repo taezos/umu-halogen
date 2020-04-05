@@ -4,10 +4,9 @@ module UmuHalogen.Capability.ManageCommand
   , ManageCommand (..)
   ) where
 
-import qualified Data.Text            as T
-import qualified Data.Text.IO         as TIO
 import           Import
-import           System.Directory     (createDirectory)
+import qualified Turtle
+import           Turtle.Prelude       as TP
 import           UmuHalogen.Templates
 import           UmuHalogen.Util
 
@@ -33,57 +32,57 @@ genProj mLoc = do
 
 writeSrcDir :: MonadIO m => Maybe Text -> m ()
 writeSrcDir mLoc = do
-  liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "src" )
+  liftIO $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "src" )
   message $ "Generating src..."
 
 writeSrcMainFile :: MonadIO m => Maybe Text -> m ()
 writeSrcMainFile mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Main.purs" ) srcMainFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "/src/Main.purs" ) srcMainFile
   message $ "Generating src/Main.purs..."
 
 writeSpagoFile :: MonadIO m => Maybe Text -> m ()
 writeSpagoFile mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "spago.dhall" ) spagoDhallFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "spago.dhall" ) spagoDhallFile
   message $ "Generating spago.dhall..."
 
 writePackagesFile :: MonadIO m => Maybe Text -> m ()
 writePackagesFile mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "packages.dhall") packagesDhallFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "packages.dhall") packagesDhallFile
   message $ "Generating packages.dhall..."
 
 writeHTMLDir :: MonadIO m => Maybe Text -> m ()
 writeHTMLDir mLoc = do
-  liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "html" )
+  liftIO $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "html" )
   message $ "Generating html..."
 
 writeIndexHTML :: MonadIO m => Maybe Text -> m ()
 writeIndexHTML mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/html/index.html" ) indexHtmlFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "/html/index.html" ) indexHtmlFile
   message $ "Generating html/index.html..."
 
 writeTestDir :: MonadIO m => Maybe Text -> m ()
 writeTestDir mLoc = do
-  liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "test" )
+  liftIO $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "test" )
   message $ "Generating test..."
 
 writeTestMainFile :: MonadIO m => Maybe Text -> m ()
 writeTestMainFile mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/test/Main.purs" ) testMainFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "/test/Main.purs" ) testMainFile
   message $ "Generating test/Main.purs..."
 
 writeComponentDir :: MonadIO m => Maybe Text -> m ()
 writeComponentDir mLoc = do
-  liftIO $ createDirectory ( T.unpack $ mkPathName mLoc "/src/Component" )
+  liftIO $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "/src/Component" )
   message $ "Generating src/Component..."
 
 writeTitleComponentFile :: MonadIO m => Maybe Text -> m ()
 writeTitleComponentFile mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "/src/Component/Title.purs" ) titleComponentFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "/src/Component/Title.purs" ) titleComponentFile
   message $ "Generating src/Component/Title.purs..."
 
 writePackageJson :: MonadIO m => Maybe Text -> m ()
 writePackageJson mLoc = do
-  liftIO $ TIO.writeFile ( T.unpack $ mkPathName mLoc "package.json" ) packageJsonFile
+  liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mLoc "package.json" ) packageJsonFile
   message $ "Generating package.json..."
 
 mkPathName :: Maybe Text -> Text -> Text

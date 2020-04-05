@@ -5,9 +5,8 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, ansi-terminal, base, bytestring
-      , classy-prelude, directory, file-embed, filepath, mtl
-      , optparse-applicative, stdenv, template-haskell, text
-      , transformers
+      , classy-prelude, file-embed, mtl, optparse-applicative, stdenv
+      , template-haskell, text, transformers, turtle
       }:
       mkDerivation {
         pname = "umu-halogen";
@@ -16,9 +15,8 @@ let
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [
-          ansi-terminal base bytestring classy-prelude directory file-embed
-          filepath mtl optparse-applicative template-haskell text
-          transformers
+          ansi-terminal base bytestring classy-prelude file-embed mtl
+          optparse-applicative template-haskell text transformers turtle
         ];
         executableHaskellDepends = [ base classy-prelude ];
         license = "unknown";
