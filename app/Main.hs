@@ -2,6 +2,7 @@
 module Main where
 
 import           ClassyPrelude
+import           UmuHalogen
 
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = startApp

@@ -22,6 +22,8 @@ library
                      , UmuHalogen.Command
                      , UmuHalogen.Capability.ManageCommand
   other-modules:       Import
+                     , UmuHalogen.Util
+                     , Paths_umu_halogen
   build-depends:       base >=4.12 && <4.14
                      , classy-prelude
                      , transformers
@@ -31,6 +33,7 @@ library
                      , optparse-applicative
                      , filepath
                      , directory
+                     , ansi-terminal
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude
@@ -42,6 +45,7 @@ executable umu-halogen
   -- other-modules:
   -- other-extensions:
   build-depends:       base >=4.12 && <4.14
+                     , umu-halogen
                      , classy-prelude
   hs-source-dirs:      app
   default-language:    Haskell2010
