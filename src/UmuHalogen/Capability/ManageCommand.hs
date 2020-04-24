@@ -21,19 +21,47 @@ instance ManageCommand IO where
   generateProject = liftIO . generateProject
 
 genProj :: ( MonadIO m, LogMessage m, ManageCommand m ) => Maybe Text -> m ()
-genProj mLoc = do
-  writeSrcDir mLoc
-  writeSrcMainFile mLoc
-  writeSpagoFile mLoc
-  writePackagesFile mLoc
-  writeAssetsDir mLoc
-  writeIndexHTML mLoc
-  writeTestDir mLoc
-  writeTestMainFile mLoc
-  writeComponentDir mLoc
-  writeTitleComponentFile mLoc
-  writePackageJson mLoc
-  writeMakeFile mLoc
+genProj mLoc = case mLoc of
+  Nothing -> baseGeneration mLoc
+  Just loc -> do
+    writeInitialDir loc
+    baseGeneration mLoc
+
+baseGeneration
+  :: ( MonadIO m, LogMessage m, ManageCommand m )
+  => Maybe Text
+  -> m ()
+baseGeneration mLoc = do
+  traverse_ ( $ mLoc )
+    [ writeSrcDir
+    , writeSrcMainFile
+    , writeSpagoFile
+    , writePackagesFile
+    , writeAssetsDir
+    , writeIndexHTML
+    , writeTestDir
+    , writeTestMainFile
+    , writeComponentDir
+    , writeTitleComponentFile
+    , writePackageJson
+    , writeMakeFile
+    ]
+
+writeInitialDir :: ( MonadIO m, LogMessage m ) => Text -> m ()
+writeInitialDir loc = do
+  res <- liftIO
+    $ tryJust ( guard . isAlreadyExistsError )
+    $ TP.mkdir ( Turtle.fromText loc )
+  either
+    ( const $ logWarn warningMessage )
+    ( const $ logInfo $ "Generating " <> loc <> "..." )
+    res
+  where
+    warningMessage :: Text
+    warningMessage = loc
+      <> " already exists but "
+      <> appName
+      <> " will continue to generate in that directory..."
 
 writeSrcDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcDir mLoc = do
