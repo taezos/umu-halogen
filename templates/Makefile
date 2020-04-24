@@ -5,7 +5,7 @@ build:
 	spago build
 
 bundle:
-	spago bundle-app --main Main --to dist/app.js && ./node_modules/.bin/parcel build html/index.html
+	spago bundle-app --main Main --to dist/app.js && ./node_modules/.bin/parcel build assets/index.html
 
 bundle-watch:
 	spago bundle-app --main Main --to dist/app.js --watch

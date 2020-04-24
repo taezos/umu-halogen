@@ -45,7 +45,9 @@ library
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude
                      , OverloadedStrings
-  ghc-options: -Wall
+  ghc-options:
+    -Wall
+    -j6
 
 
 executable umu-halogen
@@ -58,3 +60,9 @@ executable umu-halogen
   hs-source-dirs:      app
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude
+  ghc-options:
+    -Wall
+    -threaded
+    -rtsopts
+    -with-rtsopts=-N
+    -j6
