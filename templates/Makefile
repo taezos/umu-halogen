@@ -4,6 +4,9 @@ build-all:
 build:
 	spago build
 
+build-watch:
+	spago build --watch
+
 bundle:
 	spago bundle-app --main Main --to dist/app.js && ./node_modules/.bin/parcel build assets/index.html
 
@@ -14,4 +17,4 @@ clean:
 	rm -rf .cache .spago node_modules .psci_modules output dist
 
 start:
-	./node_modules/.bin/http-server dist
+	./node_modules/.bin/parcel assets/index.html

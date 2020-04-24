@@ -28,3 +28,6 @@ titleComponentFile = $(embedFileUtf8 "templates/TitleComponent.purs")
 
 makeFile :: Text
 makeFile = $(embedFileUtf8 "templates/Makefile")
+
+indexJS :: Text
+indexJS = $(embedFileUtf8 "templates/index.js")
