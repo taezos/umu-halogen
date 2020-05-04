@@ -3,13 +3,13 @@ module UmuHalogen where
 
 import           Import
 import           Options.Applicative
--- Lens
+-- lens
 import           Lens.Micro
--- Umu
+-- umu
+import           UmuHalogen.Capability.Command
 import           UmuHalogen.Capability.LogMessage
-import           UmuHalogen.Capability.ManageCommand
-import           UmuHalogen.Command
 import           UmuHalogen.Log
+import           UmuHalogen.Parser.Command
 
 newtype AppM m a
   = AppM
@@ -30,9 +30,12 @@ startApp = do
     run comm = case comm of
       CommandInit mLoc -> do
         generateProject mLoc
+      CommandComponent path componentName -> do
+        generateComponent path componentName
 
 instance MonadIO m => ManageCommand ( AppM m ) where
   generateProject = genProj
+  generateComponent = genComponent
 
 instance MonadIO m => LogMessage ( AppM m ) where
   logMessage l = case l ^. logReason of

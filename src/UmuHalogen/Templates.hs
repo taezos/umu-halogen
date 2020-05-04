@@ -31,3 +31,21 @@ makeFile = $(embedFileUtf8 "templates/Makefile")
 
 indexJS :: Text
 indexJS = $(embedFileUtf8 "templates/index.js")
+
+componentTemplate :: Text -> Text
+componentTemplate componentName = unlines
+  [ "module " <> componentName <> " where"
+  , mempty
+  , "import Prelude"
+  , "-- halogen"
+  , "import Halogen as H"
+  , "import Halogen.HTML as HH"
+  , mempty
+  , "component :: forall q i o m. H.Component HH.HTML q i o m"
+  , "component = "
+  , "  H.mkComponent"
+  , "  { intialState: identity"
+  , "  , render: const $ HH.h1 [ HH.text \"" <> componentName <> " Component\" ]"
+  , "  , eval: H.mkEval H.defaultEval"
+  , "  }"
+  ]

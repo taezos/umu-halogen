@@ -21,12 +21,12 @@ library
   exposed-modules:     UmuHalogen
   other-modules:       Import
                      , UmuHalogen.Util
-                     , UmuHalogen.Command
                      , UmuHalogen.Templates
                      , UmuHalogen.TH
                      , UmuHalogen.Log
-                     , UmuHalogen.Capability.ManageCommand
+                     , UmuHalogen.Capability.Command
                      , UmuHalogen.Capability.LogMessage
+                     , UmuHalogen.Parser.Command
                      , Paths_umu_halogen
   build-depends:       base >=4.12 && <4.14
                      , classy-prelude
@@ -40,7 +40,7 @@ library
                      , template-haskell
                      , turtle
                      , microlens
-                     , microlens-th
+                     , filepath
   hs-source-dirs:      src
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude

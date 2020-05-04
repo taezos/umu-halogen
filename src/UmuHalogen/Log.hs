@@ -11,7 +11,7 @@ module UmuHalogen.Log
   ) where
 
 import           Import
-import           Lens.Micro.TH
+import           Lens.Micro
 import           System.Console.ANSI as ANSI
 
 data LogReason
@@ -62,5 +62,19 @@ mkTerminalLog msg reason logHeader = do
       Error -> ANSI.Red
       Warn  -> ANSI.Yellow
 
-makeLenses ''LogMessage
-makeLenses ''Log
+-- lens
+logMessageText :: Lens' LogMessage Text
+logMessageText fn logMessage@LogMessage{ _logMessageText = msg } =
+  fn msg <&> \newMsg -> logMessage { _logMessageText = newMsg }
+
+logMessageHeader :: Lens' LogMessage Text
+logMessageHeader fn logMessage@LogMessage { _logMessageHeader = header  } =
+  fn header <&> \newHeader -> logMessage { _logMessageHeader = newHeader }
+
+logReason :: Lens' Log LogReason
+logReason fn logR@Log{ _logReason = reason } =
+  fn reason <&> \newReason -> logR { _logReason = newReason }
+
+logMsg :: Lens' Log LogMessage
+logMsg fn logR@Log{ _logMsg = msg } =
+  fn msg <&> \newMessage -> logR { _logMsg = newMessage }

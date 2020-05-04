@@ -1,10 +1,17 @@
+{-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE OverloadedStrings #-}
-module UmuHalogen.Capability.ManageCommand
+module UmuHalogen.Capability.Command
   ( genProj
   , ManageCommand (..)
+  , genComponent
   ) where
 
 import           Import
+-- text
+import           Data.Char
+import qualified Data.Text                        as T
+-- filepath
+import qualified System.FilePath                  as FP
 -- Turtle
 import qualified Turtle
 import           Turtle.Prelude                   as TP
@@ -13,12 +20,13 @@ import           UmuHalogen.Capability.LogMessage
 import           UmuHalogen.Templates
 import           UmuHalogen.Util
 
-
 class Monad m => ManageCommand m where
   generateProject :: Maybe Text -> m ()
+  generateComponent :: Text -> Text -> m ()
 
 instance ManageCommand IO where
   generateProject = liftIO . generateProject
+  generateComponent path = liftIO . generateComponent path
 
 genProj :: ( MonadIO m, LogMessage m, ManageCommand m ) => Maybe Text -> m ()
 genProj mLoc = case mLoc of
@@ -26,6 +34,10 @@ genProj mLoc = case mLoc of
   Just loc -> do
     writeInitialDir loc
     baseGeneration mLoc
+
+genComponent :: ( MonadIO m, LogMessage m, ManageCommand m ) => Text -> Text -> m ()
+genComponent path componentName = do
+  writeComponentFile path componentName
 
 baseGeneration
   :: ( MonadIO m, LogMessage m, ManageCommand m )
@@ -110,6 +122,44 @@ writeComponentDir mLoc = do
 -----------------------------------------------------------
 -- File Generation
 -----------------------------------------------------------
+writeComponentFile :: ( MonadIO m, LogMessage m ) => Text -> Text -> m ()
+writeComponentFile path componentName = do
+  fileExists <- TP.testfile $ Turtle.fromText verifiedFilePath
+  dirExists <- TP.testdir $ Turtle.fromText verifiedDirPath
+  if | fileExists -> logError ( verifiedFilePath <> " already exists!" )
+     | dirExists && not fileExists -> do
+         liftIO $ TP.writeTextFile ( Turtle.fromText verifiedFilePath )
+          ( componentTemplate verifiedComponentName )
+         logInfo ( "Generating " <> verifiedComponentName <> " component to " <> verifiedDirPath )
+     | otherwise -> logError $ verifiedDirPath <> " does not exist!"
+  where
+    verifiedComponentName :: Text
+    verifiedComponentName =
+      maybe "" ( <> "." <> componentName )
+      $ snd
+      <$> ( discardFirstDot . concatWithDot . filterLower . splitAtPathSeparator $ path )
+
+    discardFirstDot :: Text -> Maybe ( Char, Text )
+    discardFirstDot = T.uncons
+
+    filterLower :: [ Text ]  -> [ Text ]
+    filterLower = filter ( not . all isLower )
+
+    concatWithDot :: [ Text ] -> Text
+    concatWithDot = concat . fmap ( "." <> )
+
+    splitAtPathSeparator :: Text -> [ Text ]
+    splitAtPathSeparator = T.split ( FP.pathSeparator == )
+
+    verifiedDirPath :: Text
+    verifiedDirPath = snoc path FP.pathSeparator
+
+    pursFileName :: Text
+    pursFileName = componentName <> ".purs"
+
+    verifiedFilePath :: Text
+    verifiedFilePath = snoc path FP.pathSeparator <> pursFileName
+
 writeSrcMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcMainFile mLoc = do
   isExists <- TP.testfile $ Turtle.fromText $ mkPathName mLoc "src/Main.purs"
