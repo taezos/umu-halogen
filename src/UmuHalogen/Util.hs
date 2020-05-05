@@ -4,6 +4,7 @@ module UmuHalogen.Util
   , isFileExists
   , generateFile
   , generateWhenFileNotExists
+  , isDirGenerated
   ) where
 
 import           Import
@@ -36,3 +37,10 @@ generateWhenFileNotExists
 generateWhenFileNotExists isExists mPathInput filePath file
   | isExists = logError ( filePath <> " already exists! " )
   | otherwise = generateFile mPathInput filePath file
+
+-- Right is considered the success case here, and means the directory was
+-- created. Left will be the error.
+isDirGenerated :: MonadIO m => Maybe Text -> Text -> m ( Either () () )
+isDirGenerated mPathInput dirName = liftIO
+  $ tryJust ( guard . isAlreadyExistsError )
+  $ TP.mkdir ( Turtle.fromText $ mkPathName mPathInput dirName )

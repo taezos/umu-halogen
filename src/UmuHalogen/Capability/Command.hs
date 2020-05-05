@@ -36,7 +36,7 @@ genProj mLoc = case mLoc of
     baseGeneration mLoc
 
 genComponent :: ( MonadIO m, LogMessage m, ManageCommand m ) => Text -> Text -> m ()
-genComponent path componentName = do
+genComponent path componentName =
   writeComponentFile path componentName
 
 baseGeneration
@@ -80,40 +80,32 @@ writeInitialDir loc = do
       <> " will continue to generate in that directory"
 
 writeSrcDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeSrcDir mLoc = do
-  res <- liftIO
-    $ tryJust ( guard . isAlreadyExistsError )
-    $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "src" )
+writeSrcDir mPathInput = do
+  res <- isDirGenerated mPathInput "src"
   either
     ( const $ logError "src directory already exists!" )
     ( const $ logInfo "Generated src" )
     res
 
 writeAssetsDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeAssetsDir mLoc = do
-  res <- liftIO
-    $ tryJust ( guard . isAlreadyExistsError )
-    $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "assets" )
+writeAssetsDir mPathInput = do
+  res <- isDirGenerated mPathInput "assets"
   either
     ( const $ logError "assets directory already exists!" )
     ( const $ logInfo "Generated assets" )
     res
 
 writeTestDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeTestDir mLoc = do
-  res <- liftIO
-    $ tryJust ( guard . isAlreadyExistsError )
-    $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "test" )
+writeTestDir mPathInput = do
+  res <- isDirGenerated mPathInput "test"
   either
     ( const $ logError "test directory already exists!" )
     ( const $ logInfo "Generated test" )
     res
 
 writeComponentDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeComponentDir mLoc = do
-  res <- liftIO
-    $ tryJust ( guard . isAlreadyExistsError )
-    $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "src/Component" )
+writeComponentDir mPathInput = do
+  res <- isDirGenerated mPathInput "src/Component"
   either
     ( const $ logError "src/Component already exists!" )
     ( const $ logInfo "Generated src/Component" )
