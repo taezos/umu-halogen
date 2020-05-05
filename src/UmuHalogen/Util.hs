@@ -3,6 +3,7 @@ module UmuHalogen.Util
   ( mkPathName
   , isFileExists
   , generateFile
+  , generateWhenFileNotExists
   ) where
 
 import           Import
@@ -24,3 +25,14 @@ generateFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> Text -> Text -> m (
 generateFile mPathInput filePath file = do
   liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) file
   logInfo ( "Generated " <> filePath )
+
+generateWhenFileNotExists
+  :: ( MonadIO m, LogMessage m )
+  => Bool
+  -> Maybe Text
+  -> Text
+  -> Text
+  -> m ()
+generateWhenFileNotExists isExists mPathInput filePath file
+  | isExists = logError ( filePath <> " already exists! " )
+  | otherwise = generateFile mPathInput filePath file

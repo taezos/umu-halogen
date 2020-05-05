@@ -163,9 +163,7 @@ writeComponentFile path componentName = do
 writeSrcMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcMainFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError ( filePath <> " already exists!" )
-    else generateFile mPathInput filePath srcMainFile
+  generateWhenFileNotExists isExists mPathInput filePath srcMainFile
   where
     filePath :: Text
     filePath = "src/Main.purs"
@@ -173,19 +171,15 @@ writeSrcMainFile mPathInput = do
 writeSpagoFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSpagoFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError (  filePath <> " already exists!" )
-    else generateFile mPathInput filePath spagoDhallFile
-    where
-      filePath :: Text
-      filePath = "spago.dhall"
+  generateWhenFileNotExists isExists mPathInput filePath spagoDhallFile
+  where
+    filePath :: Text
+    filePath = "spago.dhall"
 
 writePackagesFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writePackagesFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError ( filePath <> " already exists!" )
-    else generateFile mPathInput filePath packagesDhallFile
+  generateWhenFileNotExists isExists mPathInput filePath packagesDhallFile
   where
     filePath :: Text
     filePath = "packages.dhall"
@@ -193,9 +187,7 @@ writePackagesFile mPathInput = do
 writeIndexHTMLFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeIndexHTMLFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError $ filePath <> " already exists!"
-    else generateFile mPathInput filePath indexHtmlFile
+  generateWhenFileNotExists isExists mPathInput filePath indexHtmlFile
   where
     filePath :: Text
     filePath = "assets/index.html"
@@ -203,9 +195,7 @@ writeIndexHTMLFile mPathInput = do
 writeIndexJSFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeIndexJSFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError $ filePath <> " already exists!"
-    else generateFile mPathInput filePath indexJS
+  generateWhenFileNotExists isExists mPathInput filePath indexJS
   where
     filePath :: Text
     filePath = "assets/index.js"
@@ -213,9 +203,7 @@ writeIndexJSFile mPathInput = do
 writeTestMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeTestMainFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError ( filePath <> " already exists!" )
-    else generateFile mPathInput filePath testMainFile
+  generateWhenFileNotExists isExists mPathInput filePath testMainFile
   where
     filePath :: Text
     filePath = "test/Main.purs"
@@ -223,9 +211,7 @@ writeTestMainFile mPathInput = do
 writeTitleComponentFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeTitleComponentFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError ( filePath <> " already exists!" )
-    else generateFile mPathInput filePath titleComponentFile
+  generateWhenFileNotExists isExists mPathInput filePath titleComponentFile
   where
     filePath :: Text
     filePath = "src/Component/Title.purs"
@@ -233,9 +219,7 @@ writeTitleComponentFile mPathInput = do
 writePackageJson :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writePackageJson mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError ( filePath <> " already exists!" )
-    else generateFile mPathInput filePath packageJsonFile
+  generateWhenFileNotExists isExists mPathInput filePath packageJsonFile
   where
     filePath :: Text
     filePath = "package.json"
@@ -243,9 +227,8 @@ writePackageJson mPathInput = do
 writeMakeFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeMakeFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
-  if isExists
-    then logError ( filePath <> " already exists!" )
-    else generateFile mPathInput filePath makeFile
+  generateWhenFileNotExists isExists mPathInput filePath makeFile
   where
     filePath :: Text
     filePath = "Makefile"
+
