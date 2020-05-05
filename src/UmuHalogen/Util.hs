@@ -9,9 +9,10 @@ import qualified Turtle
 import qualified Turtle.Prelude as TP
 
 mkPathName :: Maybe Text -> Text -> Text
-mkPathName mPathInput fileName =
-  -- If the user doesn't provide mPathInput, generate in the current directory.
-  maybe "./" (\loc -> "./" <> loc <> "/") mPathInput <> fileName
+mkPathName mDirPathInput filePath =
+  -- If the user doesn't provide mDirPathInput which is the target directory,
+  -- then generate in the current directory.
+  maybe "./" (\loc -> "./" <> loc <> "/") mDirPathInput <> filePath
 
 isFileExists :: MonadIO m => Maybe Text -> Text -> m Bool
 isFileExists mPathInput filePath =
