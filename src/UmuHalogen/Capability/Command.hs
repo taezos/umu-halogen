@@ -70,14 +70,14 @@ writeInitialDir loc = do
     $ TP.mkdir ( Turtle.fromText loc )
   either
     ( const $ logWarn warningMessage )
-    ( const $ logInfo $ "Generating " <> loc <> "..." )
+    ( const $ logInfo $ "Generated " <> loc  )
     res
   where
     warningMessage :: Text
     warningMessage = loc
       <> " already exists but "
       <> appName
-      <> " will continue to generate in that directory..."
+      <> " will continue to generate in that directory"
 
 writeSrcDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcDir mLoc = do
@@ -86,7 +86,7 @@ writeSrcDir mLoc = do
     $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "src" )
   either
     ( const $ logError "src directory already exists!" )
-    ( const $ logInfo "Generating src..." )
+    ( const $ logInfo "Generated src" )
     res
 
 writeAssetsDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
@@ -96,7 +96,7 @@ writeAssetsDir mLoc = do
     $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "assets" )
   either
     ( const $ logError "assets directory already exists!" )
-    ( const $ logInfo "Generating assets..." )
+    ( const $ logInfo "Generated assets" )
     res
 
 writeTestDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
@@ -106,7 +106,7 @@ writeTestDir mLoc = do
     $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "test" )
   either
     ( const $ logError "test directory already exists!" )
-    ( const $ logInfo "Generating test..." )
+    ( const $ logInfo "Generated test" )
     res
 
 writeComponentDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
@@ -116,7 +116,7 @@ writeComponentDir mLoc = do
     $ TP.mkdir ( Turtle.fromText $ mkPathName mLoc "src/Component" )
   either
     ( const $ logError "src/Component already exists!" )
-    ( const $ logInfo "Generating src/Component..." )
+    ( const $ logInfo "Generated src/Component" )
     res
 
 -----------------------------------------------------------
@@ -130,7 +130,7 @@ writeComponentFile path componentName = do
      | dirExists && not fileExists -> do
          liftIO $ TP.writeTextFile ( Turtle.fromText verifiedFilePath )
           ( componentTemplate verifiedComponentName )
-         logInfo ( "Generating " <> verifiedComponentName <> " component to " <> verifiedDirPath )
+         logInfo ( "Generated " <> verifiedComponentName <> " component to " <> verifiedDirPath )
      | otherwise -> logError $ verifiedDirPath <> " does not exist!"
   where
     verifiedComponentName :: Text
@@ -167,7 +167,7 @@ writeSrcMainFile mPathInput = do
     then logError ( filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) srcMainFile
-      logInfo ( "Generating " <> filePath <> "..." )
+      logInfo ( "Generated " <> filePath  )
     where
       filePath :: Text
       filePath = "src/Main.purs"
@@ -179,7 +179,7 @@ writeSpagoFile mPathInput = do
     then logError (  filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) spagoDhallFile
-      logInfo "Generating spago.dhall..."
+      logInfo "Generated spago.dhall"
     where
       filePath :: Text
       filePath = "spago.dhall"
@@ -191,7 +191,7 @@ writePackagesFile mPathInput = do
     then logError ( filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) packagesDhallFile
-      logInfo ( "Generating " <> filePath <> "..." )
+      logInfo ( "Generated " <> filePath  )
     where
       filePath :: Text
       filePath = "packages.dhall"
@@ -203,7 +203,7 @@ writeIndexHTMLFile mPathInput = do
     then logError $ filePath <> " already exists!"
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) indexHtmlFile
-      logInfo $ "Generating " <> filePath <> "..."
+      logInfo $ "Generated " <> filePath
   where
     filePath :: Text
     filePath = "assets/index.html"
@@ -215,7 +215,7 @@ writeIndexJSFile mPathInput = do
     then logError $ filePath <> " already exists!"
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) indexJS
-      logInfo $ "Generating " <> filePath <> "..."
+      logInfo $ "Generated " <> filePath
   where
     filePath :: Text
     filePath = "assets/index.js"
@@ -227,7 +227,7 @@ writeTestMainFile mPathInput = do
     then logError ( filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) testMainFile
-      logInfo ( "Generating " <> filePath <> "..." )
+      logInfo ( "Generated " <> filePath  )
   where
     filePath :: Text
     filePath = "test/Main.purs"
@@ -239,7 +239,7 @@ writeTitleComponentFile mPathInput = do
     then logError ( filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) titleComponentFile
-      logInfo ( "Generating " <> filePath <> "..." )
+      logInfo ( "Generated " <> filePath  )
   where
     filePath :: Text
     filePath = "src/Component/Title.purs"
@@ -251,7 +251,7 @@ writePackageJson mPathInput = do
     then logError ( filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) packageJsonFile
-      logInfo ( "Generating " <> filePath <> "..." )
+      logInfo ( "Generated " <> filePath  )
   where
     filePath :: Text
     filePath = "package.json"
@@ -263,7 +263,7 @@ writeMakeFile mPathInput = do
     then logError ( filePath <> " already exists!" )
     else do
       liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) makeFile
-      logInfo ( "Generating " <> filePath <> "..." )
+      logInfo ( "Generated " <> filePath  )
   where
     filePath :: Text
     filePath = "Makefile"
