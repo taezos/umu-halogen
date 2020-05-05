@@ -165,21 +165,17 @@ writeSrcMainFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError ( filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) srcMainFile
-      logInfo ( "Generated " <> filePath  )
-    where
-      filePath :: Text
-      filePath = "src/Main.purs"
+    else generateFile mPathInput filePath srcMainFile
+  where
+    filePath :: Text
+    filePath = "src/Main.purs"
 
 writeSpagoFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSpagoFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError (  filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) spagoDhallFile
-      logInfo "Generated spago.dhall"
+    else generateFile mPathInput filePath spagoDhallFile
     where
       filePath :: Text
       filePath = "spago.dhall"
@@ -189,21 +185,17 @@ writePackagesFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError ( filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) packagesDhallFile
-      logInfo ( "Generated " <> filePath  )
-    where
-      filePath :: Text
-      filePath = "packages.dhall"
+    else generateFile mPathInput filePath packagesDhallFile
+  where
+    filePath :: Text
+    filePath = "packages.dhall"
 
 writeIndexHTMLFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeIndexHTMLFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError $ filePath <> " already exists!"
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) indexHtmlFile
-      logInfo $ "Generated " <> filePath
+    else generateFile mPathInput filePath indexHtmlFile
   where
     filePath :: Text
     filePath = "assets/index.html"
@@ -213,9 +205,7 @@ writeIndexJSFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError $ filePath <> " already exists!"
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) indexJS
-      logInfo $ "Generated " <> filePath
+    else generateFile mPathInput filePath indexJS
   where
     filePath :: Text
     filePath = "assets/index.js"
@@ -225,9 +215,7 @@ writeTestMainFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError ( filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) testMainFile
-      logInfo ( "Generated " <> filePath  )
+    else generateFile mPathInput filePath testMainFile
   where
     filePath :: Text
     filePath = "test/Main.purs"
@@ -237,9 +225,7 @@ writeTitleComponentFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError ( filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) titleComponentFile
-      logInfo ( "Generated " <> filePath  )
+    else generateFile mPathInput filePath titleComponentFile
   where
     filePath :: Text
     filePath = "src/Component/Title.purs"
@@ -249,9 +235,7 @@ writePackageJson mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError ( filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) packageJsonFile
-      logInfo ( "Generated " <> filePath  )
+    else generateFile mPathInput filePath packageJsonFile
   where
     filePath :: Text
     filePath = "package.json"
@@ -261,9 +245,7 @@ writeMakeFile mPathInput = do
   isExists <- isFileExists mPathInput filePath
   if isExists
     then logError ( filePath <> " already exists!" )
-    else do
-      liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) makeFile
-      logInfo ( "Generated " <> filePath  )
+    else generateFile mPathInput filePath makeFile
   where
     filePath :: Text
     filePath = "Makefile"
