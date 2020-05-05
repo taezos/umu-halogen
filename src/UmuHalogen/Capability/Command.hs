@@ -81,35 +81,47 @@ writeInitialDir loc = do
 
 writeSrcDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcDir mPathInput = do
-  res <- isDirGenerated mPathInput "src"
+  res <- isDirGenerated mPathInput dirName
   either
-    ( const $ logError "src directory already exists!" )
-    ( const $ logInfo "Generated src" )
+    ( const $ logError $ dirName <> " directory already exists!" )
+    ( const $ logInfo $ "Generated " <> dirName  )
     res
+  where
+    dirName :: Text
+    dirName = "src"
 
 writeAssetsDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeAssetsDir mPathInput = do
-  res <- isDirGenerated mPathInput "assets"
+  res <- isDirGenerated mPathInput dirName
   either
-    ( const $ logError "assets directory already exists!" )
-    ( const $ logInfo "Generated assets" )
+    ( const $ logError $ dirName <> " directory already exists!" )
+    ( const $ logInfo $ "Generated " <> dirName )
     res
+  where
+    dirName :: Text
+    dirName = "assets"
 
 writeTestDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeTestDir mPathInput = do
   res <- isDirGenerated mPathInput "test"
   either
-    ( const $ logError "test directory already exists!" )
-    ( const $ logInfo "Generated test" )
+    ( const $ logError $ dirName <> " directory already exists!" )
+    ( const $ logInfo $ "Generated " <> dirName )
     res
+  where
+    dirName :: Text
+    dirName = "test"
 
 writeComponentDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeComponentDir mPathInput = do
-  res <- isDirGenerated mPathInput "src/Component"
+  res <- isDirGenerated mPathInput dirName
   either
-    ( const $ logError "src/Component already exists!" )
-    ( const $ logInfo "Generated src/Component" )
+    ( const $ logError $ dirName <> " already exists!" )
+    ( const $ logInfo $ "Generated " <> dirName )
     res
+  where
+    dirName :: Text
+    dirName = "src/Component"
 
 -----------------------------------------------------------
 -- File Generation
