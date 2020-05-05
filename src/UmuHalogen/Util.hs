@@ -5,6 +5,7 @@ module UmuHalogen.Util
   , generateFile
   , generateWhenFileNotExists
   , isDirGenerated
+  , dirResHandler
   ) where
 
 import           Import
@@ -44,3 +45,10 @@ isDirGenerated :: MonadIO m => Maybe Text -> Text -> m ( Either () () )
 isDirGenerated mPathInput dirName = liftIO
   $ tryJust ( guard . isAlreadyExistsError )
   $ TP.mkdir ( Turtle.fromText $ mkPathName mPathInput dirName )
+
+-- Directory generation response handler
+dirResHandler :: ( MonadIO m, LogMessage m ) => Text -> Either () () -> m ()
+dirResHandler dirName res = either
+  ( const $ logError $ dirName <> " directory already exists!" )
+  ( const $ logInfo $ "Generated " <> dirName )
+  res
