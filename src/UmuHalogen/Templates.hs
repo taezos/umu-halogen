@@ -44,8 +44,8 @@ componentTemplate componentName = unlines
   , "component :: forall q i o m. H.Component HH.HTML q i o m"
   , "component = "
   , "  H.mkComponent"
-  , "  { intialState: identity"
-  , "  , render: const $ HH.h1 [ HH.text \"" <> componentName <> " Component\" ]"
-  , "  , eval: H.mkEval H.defaultEval"
-  , "  }"
+  , "    { initialState: identity"
+  , "    , render: const $ HH.h1_ [ HH.text \"" <> componentName <> " Component\" ]"
+  , "    , eval: H.mkEval H.defaultEval"
+  , "    }"
   ]
