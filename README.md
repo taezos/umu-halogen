@@ -15,3 +15,10 @@ Available commands:
   component                Generate a component
 
 ```
+
+### Installation with cabal
+
+```
+cabal new-build
+cabal new-install exe:umu-halogen # installs to ~/.cabal/bin
+```
