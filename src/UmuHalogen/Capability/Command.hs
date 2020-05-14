@@ -9,14 +9,14 @@ module UmuHalogen.Capability.Command
 import           Import
 -- text
 import           Data.Char
-import qualified Data.Text                        as T
+import qualified Data.Text                 as T
 -- filepath
-import qualified System.FilePath                  as FP
+import qualified System.FilePath           as FP
 -- turtle
 import qualified Turtle
-import           Turtle.Prelude                   as TP
+import           Turtle.Prelude            as TP
 -- umu
-import           UmuHalogen.Capability.LogMessage
+import           UmuHalogen.Capability.Log
 import           UmuHalogen.Templates
 import           UmuHalogen.Util
 

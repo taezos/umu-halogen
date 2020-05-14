@@ -7,7 +7,7 @@ import           Options.Applicative
 import           Lens.Micro
 -- umu
 import           UmuHalogen.Capability.Command
-import           UmuHalogen.Capability.LogMessage
+import           UmuHalogen.Capability.Log
 import           UmuHalogen.Log
 import           UmuHalogen.Parser.Command
 

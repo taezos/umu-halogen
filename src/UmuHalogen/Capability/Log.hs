@@ -1,4 +1,4 @@
-module UmuHalogen.Capability.LogMessage where
+module UmuHalogen.Capability.Log where
 
 import           Import         hiding (log)
 import           UmuHalogen.Log

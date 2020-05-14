@@ -31,7 +31,7 @@ library
                      , UmuHalogen.TH
                      , UmuHalogen.Log
                      , UmuHalogen.Capability.Command
-                     , UmuHalogen.Capability.LogMessage
+                     , UmuHalogen.Capability.Log
                      , UmuHalogen.Parser.Command
                      , Paths_umu_halogen
   build-depends:       base >=4.12 && <4.14

@@ -11,13 +11,13 @@ module UmuHalogen.Util
 
 import           Import
 -- text
-import qualified Data.Text                        as T
-import           Text.Casing                      (pascal)
+import qualified Data.Text                 as T
+import           Text.Casing               (pascal)
 -- turtle
 import qualified Turtle
-import qualified Turtle.Prelude                   as TP
+import qualified Turtle.Prelude            as TP
 -- umu-halogen
-import           UmuHalogen.Capability.LogMessage
+import           UmuHalogen.Capability.Log
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mDirPathInput filePath =
