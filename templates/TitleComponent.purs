@@ -1,10 +1,15 @@
 module Component.Title where
 
 import Prelude
-
+import Data.Symbol
 -- Halogen
 import Halogen as H
 import Halogen.HTML as HH
+
+type Slot p = forall query. H.Slot query Void p
+
+_title :: SProxy "title"
+_title = SProxy
 
 component :: forall q i o m. H.Component HH.HTML q i o m
 component =

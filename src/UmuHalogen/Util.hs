@@ -6,11 +6,17 @@ module UmuHalogen.Util
   , generateWhenFileNotExists
   , isDirGenerated
   , dirResHandler
+  , toPascalCase
   ) where
 
 import           Import
+-- text
+import qualified Data.Text                        as T
+import           Text.Casing                      (pascal)
+-- turtle
 import qualified Turtle
 import qualified Turtle.Prelude                   as TP
+-- umu-halogen
 import           UmuHalogen.Capability.LogMessage
 
 mkPathName :: Maybe Text -> Text -> Text
@@ -52,3 +58,6 @@ dirResHandler dirName res = either
   ( const $ logError $ dirName <> " directory already exists!" )
   ( const $ logInfo $ "Generated " <> dirName )
   res
+
+toPascalCase :: Text -> Text
+toPascalCase = T.pack . pascal . T.unpack

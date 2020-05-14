@@ -116,18 +116,18 @@ writeComponentDir mPathInput = do
 -----------------------------------------------------------
 writeComponentFile :: ( MonadIO m, LogMessage m ) => Text -> Text -> m ()
 writeComponentFile path componentName = do
-  fileExists <- TP.testfile $ Turtle.fromText verifiedFilePath
-  dirExists <- TP.testdir $ Turtle.fromText verifiedDirPath
-  if | fileExists -> logError ( verifiedFilePath <> " already exists!" )
+  fileExists <- TP.testfile $ Turtle.fromText sanitizedFilePath
+  dirExists <- TP.testdir $ Turtle.fromText sanitizedDirPath
+  if | fileExists -> logError ( sanitizedFilePath <> " already exists!" )
      | dirExists && not fileExists -> do
-         liftIO $ TP.writeTextFile ( Turtle.fromText verifiedFilePath )
-          ( componentTemplate verifiedComponentName )
-         logInfo ( "Generated " <> verifiedComponentName <> " component to " <> verifiedDirPath )
-     | otherwise -> logError $ verifiedDirPath <> " does not exist!"
+         liftIO $ TP.writeTextFile ( Turtle.fromText sanitizedFilePath )
+          ( componentTemplate componentName sanitizedComponentName )
+         logInfo ( "Generated " <> sanitizedComponentName <> " component to " <> sanitizedDirPath )
+     | otherwise -> logError $ sanitizedDirPath <> " does not exist!"
   where
-    verifiedComponentName :: Text
-    verifiedComponentName =
-      maybe "" ( <> "." <> componentName )
+    sanitizedComponentName :: Text
+    sanitizedComponentName =
+      maybe "" ( <> "." <> toPascalCase componentName )
       $ snd
       <$> ( discardFirstDot . concatWithDot . filterLower . splitAtPathSeparator $ path )
 
@@ -143,14 +143,14 @@ writeComponentFile path componentName = do
     splitAtPathSeparator :: Text -> [ Text ]
     splitAtPathSeparator = T.split ( FP.pathSeparator == )
 
-    verifiedDirPath :: Text
-    verifiedDirPath = snoc path FP.pathSeparator
+    sanitizedDirPath :: Text
+    sanitizedDirPath = snoc path FP.pathSeparator
 
     pursFileName :: Text
-    pursFileName = componentName <> ".purs"
+    pursFileName = toPascalCase componentName <> ".purs"
 
-    verifiedFilePath :: Text
-    verifiedFilePath = snoc path FP.pathSeparator <> pursFileName
+    sanitizedFilePath :: Text
+    sanitizedFilePath = snoc path FP.pathSeparator <> pursFileName
 
 writeSrcMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcMainFile mPathInput = do
