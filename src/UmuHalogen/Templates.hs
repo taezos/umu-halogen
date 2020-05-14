@@ -16,9 +16,6 @@ packageJsonFile = $(embedFileUtf8 "templates/package.json")
 srcMainFile :: Text
 srcMainFile = $(embedFileUtf8 "templates/SrcMain.purs")
 
-spagoDhallFile :: Text
-spagoDhallFile = $(embedFileUtf8 "templates/spago.dhall")
-
 packagesDhallFile :: Text
 packagesDhallFile = $(embedFileUtf8 "templates/packages.dhall")
 
@@ -66,3 +63,17 @@ componentTemplate rawComponentName componentName = unlines
   where
     toCamelCase :: Text -> Text
     toCamelCase = T.pack . camel . T.unpack
+
+spagoTemplate :: Text -> Text
+spagoTemplate projectName = unlines
+  [ "{-"
+  , "Welcome to a Spago project!"
+  , "You can edit this file as you like."
+  , "-}"
+  , "{ name = \"" <> projectName <> "\""
+  , ", dependencies ="
+  , "    [ \"console\", \"effect\", \"halogen\", \"psci-support\" ]"
+  , ", packages = ./packages.dhall"
+  , ", sources = [ \"src/**/*.purs\", \"test/**/*.purs\" ]"
+  , "}"
+  ]

@@ -1,5 +1,6 @@
-{-# LANGUAGE MultiWayIf        #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiWayIf          #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module UmuHalogen.Capability.Command
   ( genProj
   , ManageCommand (..)
@@ -12,6 +13,8 @@ import           Data.Char
 import qualified Data.Text                 as T
 -- filepath
 import qualified System.FilePath           as FP
+-- directory
+import qualified System.Directory          as Directory
 -- turtle
 import qualified Turtle
 import           Turtle.Prelude            as TP
@@ -77,7 +80,7 @@ writeInitialDir loc = do
     warningMessage = loc
       <> " already exists but "
       <> appName
-      <> " will continue to generate in that directory"
+      <> " will continue to generate the scaffold in that directory"
 
 writeSrcDir :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcDir mPathInput = do
@@ -162,8 +165,20 @@ writeSrcMainFile mPathInput = do
 
 writeSpagoFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSpagoFile mPathInput = do
+  mCurrentDirectory <- liftIO
+    $ listToMaybe
+    . reverse
+    . T.split ( == FP.pathSeparator )
+    . T.pack
+    <$> Directory.getCurrentDirectory
   isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath spagoDhallFile
+  generateWhenFileNotExists
+    isExists
+    mPathInput
+    filePath
+    ( spagoTemplate
+      $ fromMaybe mempty
+      $ flip fromMaybe mPathInput <$> mCurrentDirectory )
   where
     filePath :: Text
     filePath = "spago.dhall"

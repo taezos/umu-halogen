@@ -7,7 +7,7 @@ let
   f = { mkDerivation, ansi-terminal, base, bytestring
       , classy-prelude, file-embed, microlens, mtl
       , optparse-applicative, stdenv, template-haskell, text
-      , transformers, turtle, filepath, casing
+      , transformers, turtle, filepath, casing, directory
       }:
       mkDerivation {
         pname = "umu-halogen";
@@ -18,7 +18,7 @@ let
         libraryHaskellDepends = [
           ansi-terminal base bytestring classy-prelude file-embed microlens
           mtl optparse-applicative template-haskell text
-          transformers turtle filepath casing
+          transformers turtle filepath casing directory
         ];
         executableHaskellDepends = [ base classy-prelude ];
         license = "unknown";
