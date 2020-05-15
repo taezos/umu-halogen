@@ -53,3 +53,22 @@ refactored to `generateFile`, including `logInfo ( "Generated " <> filePath )`
 
 * directory generation function had dirName as hardcoded texts scattered
 in the function. Refactored as `dirName` in where clause.
+
+## v0.2.0.2 -- 2020-05-15
+
+* The spago file  project name field was previously hardcoded. Refactored it to take use
+the parent directory name as project name
+
+* renamed UmuHalogen.Capability.LogMessage to UmuHalogen.Capability.Log 
+
+* Generated component now has `Slot` and `SProxy`. 
+
+* `toPascalCase` is applied on the input for component name.
+
+* Template files added to cabal file so the project can be install with `cabal
+  new-install`. Thanks to @chiroptical.
+
+* Fixed generated component typo. Thanks to @chiroptical.
+
+* Refactored directory generation as `dirResHandler`. This logic was previously
+  littered in every directory generation function.
