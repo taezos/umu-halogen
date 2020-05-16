@@ -33,7 +33,7 @@ startApp = do
       CommandComponent path componentName -> do
         generateComponent path componentName
 
-instance MonadIO m => ManageCommand ( AppM m ) where
+instance MonadIO m => ManageGeneration ( AppM m ) where
   generateProject = genProj
   generateComponent = genComponent
 

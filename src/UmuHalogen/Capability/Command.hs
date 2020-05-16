@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module UmuHalogen.Capability.Command
   ( genProj
-  , ManageCommand (..)
+  , ManageGeneration (..)
   , genComponent
   ) where
 
@@ -23,27 +23,27 @@ import           UmuHalogen.Capability.Log
 import           UmuHalogen.Templates
 import           UmuHalogen.Util
 
-class Monad m => ManageCommand m where
+class Monad m => ManageGeneration m where
   generateProject :: Maybe Text -> m ()
   generateComponent :: Text -> Text -> m ()
 
-instance ManageCommand IO where
+instance ManageGeneration IO where
   generateProject = liftIO . generateProject
   generateComponent path = liftIO . generateComponent path
 
-genProj :: ( MonadIO m, LogMessage m, ManageCommand m ) => Maybe Text -> m ()
+genProj :: ( MonadIO m, LogMessage m, ManageGeneration m ) => Maybe Text -> m ()
 genProj mLoc = case mLoc of
   Nothing -> baseGeneration mLoc
   Just loc -> do
     writeInitialDir loc
     baseGeneration mLoc
 
-genComponent :: ( MonadIO m, LogMessage m, ManageCommand m ) => Text -> Text -> m ()
+genComponent :: ( MonadIO m, LogMessage m, ManageGeneration m ) => Text -> Text -> m ()
 genComponent path componentName =
   writeComponentFile path componentName
 
 baseGeneration
-  :: ( MonadIO m, LogMessage m, ManageCommand m )
+  :: ( MonadIO m, LogMessage m, ManageGeneration m )
   => Maybe Text
   -> m ()
 baseGeneration mLoc = do
