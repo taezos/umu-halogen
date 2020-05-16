@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiWayIf          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module UmuHalogen.Capability.Command
+module UmuHalogen.Capability.Generation
   ( genProj
   , ManageGeneration (..)
   , genComponent
