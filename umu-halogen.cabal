@@ -30,6 +30,7 @@ library
                      , UmuHalogen.Templates
                      , UmuHalogen.TH
                      , UmuHalogen.Log
+                     , UmuHalogen.Types
                      , UmuHalogen.Capability.Generation
                      , UmuHalogen.Capability.Log
                      , UmuHalogen.Parser.Command

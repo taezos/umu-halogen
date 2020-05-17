@@ -3,6 +3,8 @@ module UmuHalogen where
 
 import           Import
 import           Options.Applicative
+-- text
+import qualified Data.Text                        as T
 -- lens
 import           Lens.Micro
 -- umu
@@ -30,8 +32,10 @@ startApp = do
     run comm = case comm of
       CommandInit mLoc -> do
         generateProject mLoc
-      CommandComponent path componentName -> do
-        generateComponent path componentName
+      CommandComponent path componentName -> either
+        ( logError . T.pack . show )
+        ( flip generateComponent componentName )
+        path
 
 instance MonadIO m => ManageGeneration ( AppM m ) where
   generateProject = genProj

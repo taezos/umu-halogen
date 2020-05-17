@@ -21,11 +21,12 @@ import           Turtle.Prelude            as TP
 -- umu
 import           UmuHalogen.Capability.Log
 import           UmuHalogen.Templates
+import           UmuHalogen.Types
 import           UmuHalogen.Util
 
 class Monad m => ManageGeneration m where
   generateProject :: Maybe Text -> m ()
-  generateComponent :: Text -> Text -> m ()
+  generateComponent :: PathInput -> ComponentName -> m ()
 
 instance ManageGeneration IO where
   generateProject = liftIO . generateProject
@@ -38,9 +39,13 @@ genProj mLoc = case mLoc of
     writeInitialDir loc
     baseGeneration mLoc
 
-genComponent :: ( MonadIO m, LogMessage m, ManageGeneration m ) => Text -> Text -> m ()
-genComponent path componentName =
-  writeComponentFile path componentName
+genComponent
+  :: ( MonadIO m, LogMessage m, ManageGeneration m )
+  => PathInput
+  -> ComponentName
+  -> m ()
+genComponent pathInput componentName =
+  writeComponentFile pathInput componentName
 
 baseGeneration
   :: ( MonadIO m, LogMessage m, ManageGeneration m )
@@ -117,22 +122,22 @@ writeComponentDir mPathInput = do
 -----------------------------------------------------------
 -- File Generation
 -----------------------------------------------------------
-writeComponentFile :: ( MonadIO m, LogMessage m ) => Text -> Text -> m ()
+writeComponentFile :: ( MonadIO m, LogMessage m ) => PathInput -> ComponentName -> m ()
 writeComponentFile path componentName = do
   fileExists <- TP.testfile $ Turtle.fromText sanitizedFilePath
   dirExists <- TP.testdir $ Turtle.fromText sanitizedDirPath
   if | fileExists -> logError ( sanitizedFilePath <> " already exists!" )
      | dirExists && not fileExists -> do
          liftIO $ TP.writeTextFile ( Turtle.fromText sanitizedFilePath )
-          ( componentTemplate componentName sanitizedComponentName )
+          ( componentTemplate ( fromComponentName componentName ) sanitizedComponentName )
          logInfo ( "Generated " <> sanitizedComponentName <> " component to " <> sanitizedDirPath )
      | otherwise -> logError $ sanitizedDirPath <> " does not exist!"
   where
     sanitizedComponentName :: Text
     sanitizedComponentName =
-      maybe "" ( <> "." <> toPascalCase componentName )
+      maybe "" ( <> "." <> ( fromComponentName componentName ))
       $ snd
-      <$> ( discardFirstDot . concatWithDot . filterLower . splitAtPathSeparator $ path )
+      <$> ( discardFirstDot . concatWithDot . filterLower . splitAtPathSeparator . fromPathInput $ path )
 
     discardFirstDot :: Text -> Maybe ( Char, Text )
     discardFirstDot = T.uncons
@@ -147,13 +152,13 @@ writeComponentFile path componentName = do
     splitAtPathSeparator = T.split ( FP.pathSeparator == )
 
     sanitizedDirPath :: Text
-    sanitizedDirPath = snoc path FP.pathSeparator
+    sanitizedDirPath = snoc ( fromPathInput path ) FP.pathSeparator
 
     pursFileName :: Text
-    pursFileName = toPascalCase componentName <> ".purs"
+    pursFileName = ( fromComponentName componentName ) <> ".purs"
 
     sanitizedFilePath :: Text
-    sanitizedFilePath = snoc path FP.pathSeparator <> pursFileName
+    sanitizedFilePath = snoc ( fromPathInput path ) FP.pathSeparator <> pursFileName
 
 writeSrcMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
 writeSrcMainFile mPathInput = do

@@ -3,18 +3,16 @@ module UmuHalogen.Parser.Command where
 
 import           Data.Version        (showVersion)
 import           Import
-import           Options.Applicative
 import           Paths_umu_halogen   (version)
+-- optsparse-applicative
+import           Options.Applicative
+-- umu
+import           UmuHalogen.Types
 
 data Command
   = CommandInit ( Maybe Text )
-  | CommandComponent Path ComponentName
+  | CommandComponent ( Either PathInputError PathInput ) ComponentName
   deriving ( Show )
-
--- TODO: Refactor to newtype. For now, use Text. The immediate goal is to generate
--- the component.
-type Path = Text
-type ComponentName = Text
 
 parseCommand :: Parser Command
 parseCommand = subparser $
@@ -32,13 +30,13 @@ parseCommandInit = CommandInit <$> initParser
 parseCommandComponent :: Parser Command
 parseCommandComponent = CommandComponent <$> pathParser <*> nameParser
   where
-    pathParser :: Parser Text
+    pathParser :: Parser ( Either PathInputError PathInput )
     pathParser =
-      argument str ( metavar "LOCATION" <> help "Location to generate the component" )
+      argument ( validatePathInput <$> str ) ( metavar "LOCATION" <> help "Location to generate the component" )
 
-    nameParser :: Parser Text
+    nameParser :: Parser ComponentName
     nameParser =
-      argument str ( metavar "COMPONENT_NAME"  <> help "Name of the component to be generated" )
+      argument ( toComponentName <$> str ) ( metavar "COMPONENT_NAME"  <> help "Name of the component to be generated" )
 
 parseVersion :: Parser ( a -> a )
 parseVersion =
