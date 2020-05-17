@@ -2,12 +2,15 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module UmuHalogen.Capability.Generation
-  ( genProj
-  , ManageGeneration (..)
+  ( ManageGeneration (..)
   , genComponent
+  , genProj
   ) where
 
+
 import           Import
+-- lens
+import           Lens.Micro
 -- text
 import           Data.Char
 import qualified Data.Text                 as T
@@ -28,16 +31,13 @@ class Monad m => ManageGeneration m where
   generateProject :: Maybe Text -> m ()
   generateComponent :: PathInput -> ComponentName -> m ()
 
-instance ManageGeneration IO where
-  generateProject = liftIO . generateProject
-  generateComponent path = liftIO . generateComponent path
-
 genProj :: ( MonadIO m, LogMessage m, ManageGeneration m ) => Maybe Text -> m ()
 genProj mLoc = case mLoc of
-  Nothing -> baseGeneration mLoc
+  Nothing -> generateDirectories mLoc
   Just loc -> do
     writeInitialDir loc
-    baseGeneration mLoc
+    generateDirectories mLoc
+    generateFiles mLoc
 
 genComponent
   :: ( MonadIO m, LogMessage m, ManageGeneration m )
@@ -47,26 +47,35 @@ genComponent
 genComponent pathInput componentName =
   writeComponentFile pathInput componentName
 
-baseGeneration
+generateDirectories
   :: ( MonadIO m, LogMessage m, ManageGeneration m )
   => Maybe Text
   -> m ()
-baseGeneration mLoc = do
-  traverse_ ( $ mLoc )
+generateDirectories mPathInput = do
+  traverse_ ( $ mPathInput )
     [ writeSrcDir
-    , writeSrcMainFile
-    , writeSpagoFile
-    , writePackagesFile
     , writeAssetsDir
-    , writeIndexHTMLFile
-    , writeIndexJSFile
     , writeTestDir
-    , writeTestMainFile
     , writeComponentDir
-    , writeTitleComponentFile
-    , writePackageJson
-    , writeMakeFile
     ]
+
+generateFiles
+  :: ( MonadIO m, LogMessage m )
+  => Maybe Text
+  -> m ()
+generateFiles mPathInput = do
+  mDefaultDirectory <- defaultDirectory
+  traverse_ ( umuWriteFile mPathInput )
+   [ writeSrcMainFile
+   , writeSpagoFile mDefaultDirectory mPathInput
+   , writePackagesFile
+   , writeIndexHTMLFile
+   , writeIndexJSFile
+   , writeTestMainFile
+   , writeTitleComponentFile
+   , writePackageJson
+   , writeMakeFile
+   ]
 
 -----------------------------------------------------------
 -- Directory Generation
@@ -122,6 +131,15 @@ writeComponentDir mPathInput = do
 -----------------------------------------------------------
 -- File Generation
 -----------------------------------------------------------
+umuWriteFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> WriteFileReq -> m ()
+umuWriteFile mPathInput wrf = do
+  isExists <- isFileExists mPathInput ( wrf ^. writeFileReqFilePath )
+  generateWhenFileNotExists
+    isExists
+    mPathInput
+    ( wrf ^. writeFileReqFilePath )
+    ( wrf ^. writeFileReqFile )
+
 writeComponentFile :: ( MonadIO m, LogMessage m ) => PathInput -> ComponentName -> m ()
 writeComponentFile path componentName = do
   fileExists <- TP.testfile $ Turtle.fromText sanitizedFilePath
@@ -158,89 +176,64 @@ writeComponentFile path componentName = do
     pursFileName = ( fromComponentName componentName ) <> ".purs"
 
     sanitizedFilePath :: Text
-    sanitizedFilePath = snoc ( fromPathInput path ) FP.pathSeparator <> pursFileName
+    sanitizedFilePath = snoc ( fromPathInput path ) FP.pathSeparator
+      <> pursFileName
 
-writeSrcMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeSrcMainFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath srcMainFile
-  where
-    filePath :: Text
-    filePath = "src/Main.purs"
+writeSrcMainFile :: WriteFileReq
+writeSrcMainFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Main.purs"
+  & writeFileReqFile .~ srcMainFile
 
-writeSpagoFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeSpagoFile mPathInput = do
-  mCurrentDirectory <- liftIO
-    $ listToMaybe
-    . reverse
-    . T.split ( == FP.pathSeparator )
-    . T.pack
-    <$> Directory.getCurrentDirectory
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists
-    isExists
-    mPathInput
-    filePath
-    ( spagoTemplate
-      $ fromMaybe mempty
-      $ flip fromMaybe mPathInput <$> mCurrentDirectory )
-  where
-    filePath :: Text
-    filePath = "spago.dhall"
+-- | Used when there is no directory input. It will retreive the directory name
+-- where the project is generated.
+defaultDirectory :: MonadIO m => m ( Maybe Text )
+defaultDirectory = liftIO
+  $ listToMaybe
+  . reverse
+  . T.split ( == FP.pathSeparator )
+  . T.pack
+  <$> Directory.getCurrentDirectory
 
-writePackagesFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writePackagesFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath packagesDhallFile
-  where
-    filePath :: Text
-    filePath = "packages.dhall"
+writeSpagoFile :: Maybe Text -> Maybe Text -> WriteFileReq
+writeSpagoFile mDirectory mPathInput = defaultWriteFileReq
+  & writeFileReqFilePath .~ "spago.dhall"
+  & writeFileReqFile
+      .~ ( spagoTemplate
+           $ fromMaybe mempty
+           $ flip fromMaybe mPathInput
+           <$> mDirectory )
 
-writeIndexHTMLFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeIndexHTMLFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath indexHtmlFile
-  where
-    filePath :: Text
-    filePath = "assets/index.html"
+writePackagesFile :: WriteFileReq
+writePackagesFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "packages.dhall"
+  & writeFileReqFile .~ packagesDhallFile
 
-writeIndexJSFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeIndexJSFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath indexJS
-  where
-    filePath :: Text
-    filePath = "assets/index.js"
+writeIndexHTMLFile :: WriteFileReq
+writeIndexHTMLFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "assets/index.html"
+  & writeFileReqFile .~ indexHtmlFile
 
-writeTestMainFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeTestMainFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath testMainFile
-  where
-    filePath :: Text
-    filePath = "test/Main.purs"
+writeIndexJSFile :: WriteFileReq
+writeIndexJSFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "assets/index.js"
+  & writeFileReqFile .~ indexJS
 
-writeTitleComponentFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeTitleComponentFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath titleComponentFile
-  where
-    filePath :: Text
-    filePath = "src/Component/Title.purs"
+writeTestMainFile :: WriteFileReq
+writeTestMainFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "test/Main.purs"
+  & writeFileReqFile .~ testMainFile
 
-writePackageJson :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writePackageJson mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath packageJsonFile
-  where
-    filePath :: Text
-    filePath = "package.json"
+writeTitleComponentFile :: WriteFileReq
+writeTitleComponentFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Component/Title.purs"
+  & writeFileReqFile .~ titleComponentFile
 
-writeMakeFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
-writeMakeFile mPathInput = do
-  isExists <- isFileExists mPathInput filePath
-  generateWhenFileNotExists isExists mPathInput filePath makeFile
-  where
-    filePath :: Text
-    filePath = "Makefile"
+writePackageJson :: WriteFileReq
+writePackageJson = defaultWriteFileReq
+  & writeFileReqFilePath .~ "package.json"
+  & writeFileReqFile .~ packageJsonFile
 
+writeMakeFile :: WriteFileReq
+writeMakeFile = defaultWriteFileReq
+  & writeFileReqFilePath .~ "Makefile"
+  & writeFileReqFile .~ makeFile

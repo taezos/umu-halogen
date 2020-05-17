@@ -62,7 +62,9 @@ mkTerminalLog msg reason logHeader = do
       Error -> ANSI.Red
       Warn  -> ANSI.Yellow
 
+-----------------------------------------------
 -- lens
+-----------------------------------------------
 logMessageText :: Lens' LogMessage Text
 logMessageText fn logMessage@LogMessage{ _logMessageText = msg } =
   fn msg <&> \newMsg -> logMessage { _logMessageText = newMsg }

@@ -2,13 +2,19 @@ module UmuHalogen.Types
   ( PathInput
   , ComponentName
   , PathInputError
+  , WriteFileReq
   , fromPathInput
   , validatePathInput
   , toComponentName
   , fromComponentName
+  , defaultWriteFileReq
+  , writeFileReqFilePath
+  , writeFileReqFile
   ) where
 
 import           Import
+-- lens
+import           Lens.Micro
 -- text
 import qualified Data.Text       as T
 import           Text.Casing     (pascal)
@@ -39,3 +45,24 @@ toComponentName = ComponentName . T.pack . pascal . T.unpack
 
 fromComponentName :: ComponentName -> Text
 fromComponentName ( ComponentName txt ) = txt
+
+data WriteFileReq = WriteFileReq
+  { _writeFileReqFilePath :: Text
+  , _writeFileReqFile     :: Text
+  } deriving ( Eq, Show )
+
+defaultWriteFileReq :: WriteFileReq
+defaultWriteFileReq = WriteFileReq
+  mempty
+  mempty
+
+-----------------------------------------------------------
+-- lens
+-----------------------------------------------------------
+writeFileReqFilePath :: Lens' WriteFileReq Text
+writeFileReqFilePath fn wrf@WriteFileReq{ _writeFileReqFilePath = filePath } =
+  fn filePath <&> \newFilePath -> wrf { _writeFileReqFilePath = newFilePath }
+
+writeFileReqFile :: Lens' WriteFileReq Text
+writeFileReqFile fn wrf@WriteFileReq{ _writeFileReqFile = file } =
+  fn file <&> \newFile -> wrf { _writeFileReqFile = newFile }
