@@ -4,7 +4,7 @@ module UmuHalogen.Util
   , isFileExists
   , generateFile
   , generateWhenFileNotExists
-  , isDirGenerated
+  , generateDir
   , dirResHandler
   , toPascalCase
   ) where
@@ -47,8 +47,8 @@ generateWhenFileNotExists isExists mPathInput filePath file
 
 -- Right is considered the success case here, and means the directory was
 -- created. Left will be the error.
-isDirGenerated :: MonadIO m => Maybe Text -> Text -> m ( Either () () )
-isDirGenerated mPathInput dirName = liftIO
+generateDir :: MonadIO m => Maybe Text -> Text -> m ( Either () () )
+generateDir mPathInput dirName = liftIO
   $ tryJust ( guard . isAlreadyExistsError )
   $ TP.mkdir ( Turtle.fromText $ mkPathName mPathInput dirName )
 

@@ -3,13 +3,16 @@ module UmuHalogen.Types
   , ComponentName
   , PathInputError
   , WriteFileReq
+  , WriteDirReq
   , fromPathInput
   , validatePathInput
   , toComponentName
   , fromComponentName
   , defaultWriteFileReq
+  , defaultWriteDirReq
   , writeFileReqFilePath
   , writeFileReqFile
+  , writeDirReqDirName
   ) where
 
 import           Import
@@ -56,6 +59,13 @@ defaultWriteFileReq = WriteFileReq
   mempty
   mempty
 
+data WriteDirReq = WriteDirReq
+  { _writeDirReqDirName :: Text
+  } deriving  ( Eq, Show )
+
+defaultWriteDirReq :: WriteDirReq
+defaultWriteDirReq = WriteDirReq mempty
+
 -----------------------------------------------------------
 -- lens
 -----------------------------------------------------------
@@ -66,3 +76,7 @@ writeFileReqFilePath fn wrf@WriteFileReq{ _writeFileReqFilePath = filePath } =
 writeFileReqFile :: Lens' WriteFileReq Text
 writeFileReqFile fn wrf@WriteFileReq{ _writeFileReqFile = file } =
   fn file <&> \newFile -> wrf { _writeFileReqFile = newFile }
+
+writeDirReqDirName :: Lens' WriteDirReq Text
+writeDirReqDirName fn wdr@WriteDirReq{ _writeDirReqDirName = dirName } =
+  fn dirName <&>  \newDirName -> wdr { _writeDirReqDirName = newDirName }

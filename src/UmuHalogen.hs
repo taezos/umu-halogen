@@ -38,7 +38,7 @@ startApp = do
         path
 
 instance MonadIO m => ManageGeneration ( AppM m ) where
-  generateProject = genProj
+  generateProject = genProject
   generateComponent = genComponent
 
 instance MonadIO m => LogMessage ( AppM m ) where
