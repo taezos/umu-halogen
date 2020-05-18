@@ -36,16 +36,10 @@ startApp = do
         ( logError . T.pack . show )
         ( flip generateComponent componentName )
         path
-      CommandRouter _ -> error "not implemented"
-        -- either
-        -- ( logError . T.pack . show )
-        -- ( generateRoute )
-        -- path
 
 instance MonadIO m => ManageGeneration ( AppM m ) where
   generateProject = genProject
   generateComponent = genComponent
-  -- generateRoute = genRoute
 
 instance MonadIO m => LogMessage ( AppM m ) where
   logMessage l = case l ^. logReason of

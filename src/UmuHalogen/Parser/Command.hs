@@ -12,7 +12,6 @@ import           UmuHalogen.Types
 data Command
   = CommandInit ( Maybe Text )
   | CommandComponent ( Either PathInputError PathInput ) ComponentName
-  | CommandRouter ( Either PathInputError PathInput )
   deriving ( Show )
 
 parseCommand :: Parser Command
@@ -20,8 +19,6 @@ parseCommand = subparser $
   ( command "init" $ parseCommandInit `withInfo` "Initialize scaffold" )
   <>
   ( command "component" $ parseCommandComponent `withInfo` "Generate a component" )
-  <>
-  ( command "router" $ parseCommandRouter `withInfo` "Generate router" )
 
 parseCommandInit :: Parser Command
 parseCommandInit = CommandInit <$> initParser
@@ -42,14 +39,6 @@ parseCommandComponent = CommandComponent <$> pathParser <*> nameParser
     nameParser = argument
       ( toComponentName <$> str )
       ( metavar "COMPONENT_NAME"  <> help "Name of the component to be generated" )
-
-parseCommandRouter :: Parser Command
-parseCommandRouter = CommandRouter <$> routerParser
-  where
-    routerParser :: Parser ( Either PathInputError PathInput )
-    routerParser = argument
-      ( validatePathInput <$> str )
-      ( metavar "PROJECT_LOCATION" <> help "Location to generate the router and its dependencies" )
 
 parseVersion :: Parser ( a -> a )
 parseVersion =
