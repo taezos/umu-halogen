@@ -9,7 +9,9 @@ import           Text.Casing     (camel)
 import           UmuHalogen.TH
 import           UmuHalogen.Util (toPascalCase)
 
-
+--------------------------------------------------------------------------------
+-- Files
+--------------------------------------------------------------------------------
 packageJsonFile :: Text
 packageJsonFile = $(embedFileUtf8 "templates/package.json")
 
@@ -34,6 +36,31 @@ makeFile = $(embedFileUtf8 "templates/Makefile")
 indexJS :: Text
 indexJS = $(embedFileUtf8 "templates/index.js")
 
+appMfile :: Text
+appMfile = $(embedFileUtf8 "templates/AppM.purs")
+
+routerComponentFile :: Text
+routerComponentFile = $(embedFileUtf8 "templates/Router.purs")
+
+routeFile :: Text
+routeFile = $(embedFileUtf8 "templates/Route.purs")
+
+homePageFile :: Text
+homePageFile = $(embedFileUtf8 "templates/HomePage.purs")
+
+navigateFile :: Text
+navigateFile = $(embedFileUtf8 "templates/Navigate.purs")
+
+aboutFile :: Text
+aboutFile = $(embedFileUtf8 "templates/About.purs")
+
+utilFile :: Text
+utilFile = $(embedFileUtf8 "templates/CommonUtil.purs")
+--------------------------------------------------------------------------------
+-- Templates
+-- The things considered as templates are the files the need to be embedded
+-- with user input.
+--------------------------------------------------------------------------------
 componentTemplate
   :: Text -- raw component name
   -> Text -- sanitized component name

@@ -49,7 +49,7 @@ parseCommandRouter = CommandRouter <$> routerParser
     routerParser :: Parser ( Either PathInputError PathInput )
     routerParser = argument
       ( validatePathInput <$> str )
-      ( metavar "PROJECT_LOCATION" <> help "Location to generate the router" )
+      ( metavar "PROJECT_LOCATION" <> help "Location to generate the router and its dependencies" )
 
 parseVersion :: Parser ( a -> a )
 parseVersion =

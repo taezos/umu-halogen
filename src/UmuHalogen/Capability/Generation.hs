@@ -29,8 +29,9 @@ import           UmuHalogen.Util
 class Monad m => ManageGeneration m where
   generateProject :: Maybe Text -> m ()
   generateComponent :: PathInput -> ComponentName -> m ()
-  generateRoute :: PathInput -> m ()
+  -- generateRoute :: PathInput -> m ()
 
+-- | generate project implementation
 genProject
   :: ( MonadIO m, LogMessage m, ManageGeneration m )
   => Maybe Text
@@ -42,6 +43,7 @@ genProject mLoc = case mLoc of
     generateDirectories mLoc
     generateFiles mLoc
 
+-- | generate component implementation
 genComponent
   :: ( MonadIO m, LogMessage m, ManageGeneration m )
   => PathInput
@@ -58,6 +60,8 @@ generateDirectories mPathInput =
     , testDirReq
     , componentDirReq
     , pageDirReq
+    , serviceDirReq
+    , commonDirReq
     ]
 
 generateFiles
@@ -77,15 +81,21 @@ generateFiles mPathInput = do
    , homePageFileReq
    , packageJsonReq
    , makeFileReq
+   , routeFileReq
+   , navigateFileReq
+   , routerFileReq
+   , appmFileReq
+   , aboutPageFileReq
+   , commonUtilFileReq
    ]
 
--- | generate route and router files
+-- | generate route and router files implementaiton
 genRoute :: ( MonadIO m, LogMessage m ) => PathInput -> m ()
 genRoute pathInput = do
   umuWriteDirectory ( Just $ fromPathInput pathInput ) serviceDirReq
   traverse_
     ( umuWriteFile ( Just $ fromPathInput pathInput ) )
-    [ routeFileReq,  navigateFileReq, routerFileReq ]
+    [ routeFileReq,  navigateFileReq, routerFileReq, appmFileReq ]
 
 -- | Used when there is no directory input. It will retreive the directory name
 -- where the project is generated.
@@ -149,6 +159,9 @@ serviceDirReq :: WriteDirReq
 serviceDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src/Service"
 
+commonDirReq :: WriteDirReq
+commonDirReq = defaultWriteDirReq
+  & writeDirReqDirName .~ "src/Common"
 -----------------------------------------------------------
 -- File Generation
 -----------------------------------------------------------
@@ -192,57 +205,45 @@ writeComponentFile path componentName = do
     sanitizedFilePath = snoc ( fromPathInput path ) FP.pathSeparator
       <> pursFileName
 
--- writeRouteFile :: ( MonadIO m, LogMessage m ) => PathInput -> m ()
--- writeRouteFile pathInput = do
---   dirExists <- TP.testdir $ Turtle.fromText ( fromPathInput pathInput )
---   if | dirExists -> do
---          liftIO $ TP.writeTextFile
---            ( Turtle.fromText $ sanitizedFilePath <> fileName )
---            ( routeTemplate )
---          logInfo ( "Generated " <> fileName <> " to " <> sanitizedFilePath  )
---      | otherwise -> logError $ sanitizedFilePath <> " does not exists!"
---   where
---     fileName :: Text
---     fileName = "Route.purs"
-
---     sanitizedComponentName :: Text
---     sanitizedComponentName =
---       fromMaybe mempty
---       $ snd
---       <$> ( discardFirstDot
---           . concatWithDot
---           . filterLower
---           . splitAtPathSeparator
---           . fromPathInput $ pathInput )
-
---     sanitizedFilePath :: Text
---     sanitizedFilePath = snoc
---       ( fromPathInput pathInput ) FP.pathSeparator
+appmFileReq :: WriteFileReq
+appmFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/AppM.purs"
+  & writeFileReqFile .~ appMfile
 
 homePageFileReq :: WriteFileReq
 homePageFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Page/Home.purs"
-  & writeFileReqFile .~ homePageTemplate
+  & writeFileReqFile .~ homePageFile
+
+aboutPageFileReq :: WriteFileReq
+aboutPageFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Page/About.purs"
+  & writeFileReqFile .~ aboutFile
 
 routeFileReq :: WriteFileReq
 routeFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Service/Route.purs"
-  & writeFileReqFile .~ routeTemplate
+  & writeFileReqFile .~ routeFile
 
 navigateFileReq :: WriteFileReq
 navigateFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Service/Navigate.purs"
-  & writeFileReqFile .~ navigateTemplate
+  & writeFileReqFile .~ navigateFile
 
 routerFileReq :: WriteFileReq
 routerFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Component/Router.purs"
-  & writeFileReqFile .~ routerComponentTemplate
+  & writeFileReqFile .~ routerComponentFile
 
 srcMainFileReq :: WriteFileReq
 srcMainFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Main.purs"
   & writeFileReqFile .~ srcMainFile
+
+commonUtilFileReq :: WriteFileReq
+commonUtilFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Common/Util.purs"
+  & writeFileReqFile .~ utilFile
 
 mkSpagoFileReq :: Maybe Text -> Maybe Text -> WriteFileReq
 mkSpagoFileReq mDirectory mPathInput = defaultWriteFileReq
