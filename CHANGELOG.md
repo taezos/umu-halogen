@@ -72,3 +72,17 @@ the parent directory name as project name
 
 * Refactored directory generation as `dirResHandler`. This logic was previously
   littered in every directory generation function.
+
+## v0.2.0.3 -- 2020-05-18
+
+### Update
+* routing is now part of initial generation.
+* Home and About page are generated on initial project generation. These 2 pages
+  are imported in the router component.
+* It will generate `AppM.purs`. It will contain the bare representation of the application
+* Updated `Main.purs`. It initializes the router.
+
+## Refactor
+
+* Refactored file and directory generation to only contain the information about the file to
+  be generated. The generation function is now separated.
