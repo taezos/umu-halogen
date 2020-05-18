@@ -21,4 +21,4 @@ component =
 
 render :: forall state action m. state -> H.ComponentHTML action () m
 render _ =
-  HH.h1_ [ HH.text "Hello, World!" ]
+  HH.h2_ [ HH.text "Hello, World!" ]

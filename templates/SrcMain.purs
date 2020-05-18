@@ -3,7 +3,7 @@ module Main where
 import Prelude
 
 -- Components
-import Component.Title as Title
+import Page.Home as Home
 -- Effect
 import Effect ( Effect )
 -- Halogen
@@ -13,4 +13,4 @@ import Halogen.VDom.Driver ( runUI )
 main :: Effect Unit
 main = HA.runHalogenAff do
   body <- HA.awaitBody
-  runUI Title.component unit body
+  runUI Home.component unit body

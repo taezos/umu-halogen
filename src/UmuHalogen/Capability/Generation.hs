@@ -5,13 +5,13 @@ module UmuHalogen.Capability.Generation
   ( ManageGeneration (..)
   , genComponent
   , genProject
+  , genRoute
   ) where
 
 import           Import
 -- lens
 import           Lens.Micro
 -- text
-import           Data.Char
 import qualified Data.Text                 as T
 -- filepath
 import qualified System.FilePath           as FP
@@ -29,6 +29,7 @@ import           UmuHalogen.Util
 class Monad m => ManageGeneration m where
   generateProject :: Maybe Text -> m ()
   generateComponent :: PathInput -> ComponentName -> m ()
+  generateRoute :: PathInput -> m ()
 
 genProject
   :: ( MonadIO m, LogMessage m, ManageGeneration m )
@@ -56,6 +57,7 @@ generateDirectories mPathInput =
     , assetDirReq
     , testDirReq
     , componentDirReq
+    , pageDirReq
     ]
 
 generateFiles
@@ -72,9 +74,18 @@ generateFiles mPathInput = do
    , indexJSFileReq
    , testMainFileReq
    , titleComponentFileReq
+   , homePageFileReq
    , packageJsonReq
    , makeFileReq
    ]
+
+-- | generate route and router files
+genRoute :: ( MonadIO m, LogMessage m ) => PathInput -> m ()
+genRoute pathInput = do
+  umuWriteDirectory ( Just $ fromPathInput pathInput ) serviceDirReq
+  traverse_
+    ( umuWriteFile ( Just $ fromPathInput pathInput ) )
+    [ routeFileReq,  navigateFileReq, routerFileReq ]
 
 -- | Used when there is no directory input. It will retreive the directory name
 -- where the project is generated.
@@ -87,7 +98,7 @@ defaultDirectory = liftIO
   <$> Directory.getCurrentDirectory
 
 -----------------------------------------------------------
--- Directory Generation Records
+-- Directory Generation
 -----------------------------------------------------------
 writeInitialDir :: ( MonadIO m, LogMessage m ) => Text -> m ()
 writeInitialDir loc = do
@@ -130,8 +141,16 @@ componentDirReq :: WriteDirReq
 componentDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src/Component"
 
+pageDirReq :: WriteDirReq
+pageDirReq = defaultWriteDirReq
+  & writeDirReqDirName .~ "src/Page"
+
+serviceDirReq :: WriteDirReq
+serviceDirReq = defaultWriteDirReq
+  & writeDirReqDirName .~ "src/Service"
+
 -----------------------------------------------------------
--- File Generation Records
+-- File Generation
 -----------------------------------------------------------
 umuWriteFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> WriteFileReq -> m ()
 umuWriteFile mPathInput wrf = do
@@ -155,21 +174,13 @@ writeComponentFile path componentName = do
   where
     sanitizedComponentName :: Text
     sanitizedComponentName =
-      maybe "" ( <> "." <> ( fromComponentName componentName ))
+      maybe mempty ( <> "." <> ( fromComponentName componentName ))
       $ snd
-      <$> ( discardFirstDot . concatWithDot . filterLower . splitAtPathSeparator . fromPathInput $ path )
-
-    discardFirstDot :: Text -> Maybe ( Char, Text )
-    discardFirstDot = T.uncons
-
-    filterLower :: [ Text ]  -> [ Text ]
-    filterLower = filter ( not . all isLower )
-
-    concatWithDot :: [ Text ] -> Text
-    concatWithDot = concat . fmap ( "." <> )
-
-    splitAtPathSeparator :: Text -> [ Text ]
-    splitAtPathSeparator = T.split ( FP.pathSeparator == )
+      <$> ( discardFirstDot
+          . concatWithDot
+          . filterLower
+          . splitAtPathSeparator
+          . fromPathInput $ path )
 
     sanitizedDirPath :: Text
     sanitizedDirPath = snoc ( fromPathInput path ) FP.pathSeparator
@@ -181,6 +192,53 @@ writeComponentFile path componentName = do
     sanitizedFilePath = snoc ( fromPathInput path ) FP.pathSeparator
       <> pursFileName
 
+-- writeRouteFile :: ( MonadIO m, LogMessage m ) => PathInput -> m ()
+-- writeRouteFile pathInput = do
+--   dirExists <- TP.testdir $ Turtle.fromText ( fromPathInput pathInput )
+--   if | dirExists -> do
+--          liftIO $ TP.writeTextFile
+--            ( Turtle.fromText $ sanitizedFilePath <> fileName )
+--            ( routeTemplate )
+--          logInfo ( "Generated " <> fileName <> " to " <> sanitizedFilePath  )
+--      | otherwise -> logError $ sanitizedFilePath <> " does not exists!"
+--   where
+--     fileName :: Text
+--     fileName = "Route.purs"
+
+--     sanitizedComponentName :: Text
+--     sanitizedComponentName =
+--       fromMaybe mempty
+--       $ snd
+--       <$> ( discardFirstDot
+--           . concatWithDot
+--           . filterLower
+--           . splitAtPathSeparator
+--           . fromPathInput $ pathInput )
+
+--     sanitizedFilePath :: Text
+--     sanitizedFilePath = snoc
+--       ( fromPathInput pathInput ) FP.pathSeparator
+
+homePageFileReq :: WriteFileReq
+homePageFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Page/Home.purs"
+  & writeFileReqFile .~ homePageTemplate
+
+routeFileReq :: WriteFileReq
+routeFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Service/Route.purs"
+  & writeFileReqFile .~ routeTemplate
+
+navigateFileReq :: WriteFileReq
+navigateFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Service/Navigate.purs"
+  & writeFileReqFile .~ navigateTemplate
+
+routerFileReq :: WriteFileReq
+routerFileReq = defaultWriteFileReq
+  & writeFileReqFilePath .~ "src/Component/Router.purs"
+  & writeFileReqFile .~ routerComponentTemplate
+
 srcMainFileReq :: WriteFileReq
 srcMainFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Main.purs"
@@ -189,11 +247,13 @@ srcMainFileReq = defaultWriteFileReq
 mkSpagoFileReq :: Maybe Text -> Maybe Text -> WriteFileReq
 mkSpagoFileReq mDirectory mPathInput = defaultWriteFileReq
   & writeFileReqFilePath .~ "spago.dhall"
-  & writeFileReqFile
-      .~ ( spagoTemplate
-           $ fromMaybe mempty
-           $ flip fromMaybe mPathInput
-           <$> mDirectory )
+  & writeFileReqFile .~ spagoTemplateFile
+  where
+    spagoTemplateFile :: Text
+    spagoTemplateFile = spagoTemplate
+      $ fromMaybe mempty
+      $ flip fromMaybe mPathInput
+      <$> mDirectory
 
 packagesFileReq :: WriteFileReq
 packagesFileReq = defaultWriteFileReq

@@ -7,10 +7,15 @@ module UmuHalogen.Util
   , generateDir
   , dirResHandler
   , toPascalCase
+  , discardFirstDot
+  , filterLower
+  , concatWithDot
+  , splitAtPathSeparator
   ) where
 
 import           Import
 -- text
+import           Data.Char
 import qualified Data.Text                 as T
 import           Text.Casing               (pascal)
 -- turtle
@@ -18,6 +23,8 @@ import qualified Turtle
 import qualified Turtle.Prelude            as TP
 -- umu-halogen
 import           UmuHalogen.Capability.Log
+--filepath
+import qualified System.FilePath           as FP
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mDirPathInput filePath =
@@ -61,3 +68,15 @@ dirResHandler dirName res = either
 
 toPascalCase :: Text -> Text
 toPascalCase = T.pack . pascal . T.unpack
+
+discardFirstDot :: Text -> Maybe ( Char, Text )
+discardFirstDot = T.uncons
+
+filterLower :: [ Text ]  -> [ Text ]
+filterLower = filter ( not . all isLower )
+
+concatWithDot :: [ Text ] -> Text
+concatWithDot = concat . fmap ( "." <> )
+
+splitAtPathSeparator :: Text -> [ Text ]
+splitAtPathSeparator = T.split ( FP.pathSeparator == )
