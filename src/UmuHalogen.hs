@@ -1,24 +1,22 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
 module UmuHalogen where
 
+import           Control.Monad.Except
 import           Import
 import           Options.Applicative
--- text
-import qualified Data.Text                        as T
--- lens
-import           Lens.Micro
 -- umu
 import           UmuHalogen.Capability.Generation
 import           UmuHalogen.Capability.Log
-import           UmuHalogen.Log
+import           UmuHalogen.Error
 import           UmuHalogen.Parser.Command
 
 newtype AppM m a
   = AppM
-  { unAppM :: m a
-  } deriving ( Functor, Applicative, Monad, MonadIO )
+  { unAppM :: ( ExceptT UmuError m ) a
+  } deriving ( Functor, Applicative, Monad, MonadIO, MonadError UmuError )
 
-runAppM :: MonadIO m => AppM m a -> m a
+runAppM :: MonadIO m => AppM m a -> ExceptT UmuError m a
 runAppM app = unAppM app
 
 startApp :: IO ()
@@ -26,15 +24,18 @@ startApp = do
   comm <- showHelpOnErrorExecParser
     ( info ( helper <*> parseVersion <*> parseCommand )
       ( fullDesc <> progDesc umuProgDesc <> header umuHeader ))
-  runAppM $ run comm
+  res <- runExceptT $ runAppM $ runCommand comm
+  either
+    ( logError . umuErrorToText )
+    ( traverse_ ( logInfo . umuResponseToText ) )
+    res
   where
-    run :: MonadIO m => Command -> AppM m ()
-    run comm = case comm of
-      CommandInit mLoc -> do
-        generateProject mLoc
+    runCommand :: MonadIO m => Command -> AppM m [ UmuResponse ]
+    runCommand comm = case comm of
+      CommandInit mPath -> generateProject mPath
       CommandComponent path componentName -> either
-        ( logError . T.pack . show )
-        ( flip generateComponent componentName )
+        throwError
+        ( ( pure <$> ) . flip generateComponent componentName )
         path
 
 instance MonadIO m => ManageGeneration ( AppM m ) where
@@ -42,23 +43,7 @@ instance MonadIO m => ManageGeneration ( AppM m ) where
   generateComponent = genComponent
 
 instance MonadIO m => LogMessage ( AppM m ) where
-  logMessage l = case l ^. logReason of
-    Info  -> mkTerminalLog
-      ( l ^. logMsg . logMessageText )
-      Info
-      ( l ^. logMsg . logMessageHeader )
-    Debug -> mkTerminalLog
-      ( l ^. logMsg . logMessageText )
-      Debug
-      ( l ^. logMsg . logMessageHeader )
-    Error -> mkTerminalLog
-      ( l ^. logMsg . logMessageText )
-      Error
-      ( l ^. logMsg . logMessageHeader )
-    Warn  -> mkTerminalLog
-      ( l ^. logMsg . logMessageText )
-      Warn
-      ( l ^. logMsg . logMessageHeader )
+  logMessage = logMessageImpl
 
 showHelpOnErrorExecParser :: ParserInfo a -> IO a
 showHelpOnErrorExecParser = customExecParser ( prefs showHelpOnError )

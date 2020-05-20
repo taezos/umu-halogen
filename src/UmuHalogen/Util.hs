@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 module UmuHalogen.Util
   ( mkPathName
@@ -13,6 +14,7 @@ module UmuHalogen.Util
   , splitAtPathSeparator
   ) where
 
+import           Control.Monad.Except
 import           Import
 -- text
 import           Data.Char
@@ -21,10 +23,11 @@ import           Text.Casing               (pascal)
 -- turtle
 import qualified Turtle
 import qualified Turtle.Prelude            as TP
--- umu-halogen
-import           UmuHalogen.Capability.Log
 --filepath
 import qualified System.FilePath           as FP
+-- umu-halogen
+import           UmuHalogen.Capability.Log
+import           UmuHalogen.Error
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mDirPathInput filePath =
@@ -36,20 +39,25 @@ isFileExists :: MonadIO m => Maybe Text -> Text -> m Bool
 isFileExists mPathInput filePath =
   TP.testfile $ Turtle.fromText ( mkPathName mPathInput filePath )
 
-generateFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> Text -> Text -> m ()
+generateFile
+  :: ( MonadIO m, LogMessage m )
+  => Maybe Text
+  -> Text
+  -> Text
+  -> m UmuResponse
 generateFile mPathInput filePath file = do
   liftIO $ TP.writeTextFile ( Turtle.fromText $ mkPathName mPathInput filePath ) file
-  logInfo ( "Generated " <> filePath )
+  pure $ FileGenerationSuccess $ "Generated " <> filePath
 
 generateWhenFileNotExists
-  :: ( MonadIO m, LogMessage m )
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Bool
   -> Maybe Text
   -> Text
   -> Text
-  -> m ()
+  -> m UmuResponse
 generateWhenFileNotExists isExists mPathInput filePath file
-  | isExists = logError ( filePath <> " already exists! " )
+  | isExists = throwError $ FileGenerationError $ filePath <> " already exists!"
   | otherwise = generateFile mPathInput filePath file
 
 -- Right is considered the success case here, and means the directory was
@@ -60,10 +68,14 @@ generateDir mPathInput dirName = liftIO
   $ TP.mkdir ( Turtle.fromText $ mkPathName mPathInput dirName )
 
 -- Directory generation response handler
-dirResHandler :: ( MonadIO m, LogMessage m ) => Text -> Either () () -> m ()
+dirResHandler
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  => Text
+  -> Either () ()
+  -> m UmuResponse
 dirResHandler dirName res = either
-  ( const $ logError $ dirName <> " directory already exists!" )
-  ( const $ logInfo $ "Generated " <> dirName )
+  ( const $ throwError $ DirectoryGenerationError $ dirName <> " directory already exists!" )
+  ( const $ pure $ DirectoryGenerationSuccess $ "Generated " <> dirName )
   res
 
 toPascalCase :: Text -> Text

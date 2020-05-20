@@ -7,12 +7,13 @@ import           Paths_umu_halogen   (version)
 -- optsparse-applicative
 import           Options.Applicative
 -- umu
+import           UmuHalogen.Error
 import           UmuHalogen.Types
 
 data Command
   = CommandInit ( Maybe Text )
-  | CommandComponent ( Either PathInputError PathInput ) ComponentName
-  deriving ( Show )
+  | CommandComponent ( Either UmuError PathInput ) ComponentName
+  deriving ( Eq, Show )
 
 parseCommand :: Parser Command
 parseCommand = subparser $
@@ -30,7 +31,7 @@ parseCommandInit = CommandInit <$> initParser
 parseCommandComponent :: Parser Command
 parseCommandComponent = CommandComponent <$> pathParser <*> nameParser
   where
-    pathParser :: Parser ( Either PathInputError PathInput )
+    pathParser :: Parser ( Either UmuError PathInput )
     pathParser = argument
       ( validatePathInput <$> str )
       ( metavar "LOCATION" <> help "Location to generate the component" )

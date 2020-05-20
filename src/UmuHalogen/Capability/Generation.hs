@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE MultiWayIf          #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -5,9 +6,10 @@ module UmuHalogen.Capability.Generation
   ( ManageGeneration (..)
   , genComponent
   , genProject
-  , genRoute
+  -- , genRoute
   ) where
 
+import           Control.Monad.Except
 import           Import
 -- lens
 import           Lens.Micro
@@ -22,39 +24,44 @@ import qualified Turtle
 import           Turtle.Prelude            as TP
 -- umu
 import           UmuHalogen.Capability.Log
+import           UmuHalogen.Error
 import           UmuHalogen.Templates
 import           UmuHalogen.Types
 import           UmuHalogen.Util
 
 class Monad m => ManageGeneration m where
-  generateProject :: Maybe Text -> m ()
-  generateComponent :: PathInput -> ComponentName -> m ()
+  generateProject :: Maybe Text -> m [ UmuResponse ]
+  generateComponent :: PathInput -> ComponentName -> m UmuResponse
   -- generateRoute :: PathInput -> m ()
 
 -- | generate project implementation
 genProject
-  :: ( MonadIO m, LogMessage m, ManageGeneration m )
+  :: ( MonadIO m, LogMessage m, ManageGeneration m, MonadError UmuError m )
   => Maybe Text
-  -> m ()
-genProject mLoc = case mLoc of
-  Nothing -> generateDirectories mLoc
+  -> m [ UmuResponse ]
+genProject mPath = case mPath of
+  Nothing -> generateDirectories mPath
   Just loc -> do
-    writeInitialDir loc
-    generateDirectories mLoc
-    generateFiles mLoc
+    writeDirRes <- writeInitialDir loc
+    genDirRes <- generateDirectories mPath
+    genFilesRes <- generateFiles mPath
+    pure $ writeDirRes <> genDirRes <> genFilesRes
 
 -- | generate component implementation
 genComponent
-  :: ( MonadIO m, LogMessage m, ManageGeneration m )
+  :: ( MonadIO m, LogMessage m, ManageGeneration m, MonadError UmuError m )
   => PathInput
   -> ComponentName
-  -> m ()
+  -> m UmuResponse
 genComponent pathInput componentName =
   writeComponentFile pathInput componentName
 
-generateDirectories :: ( MonadIO m, LogMessage m ) => Maybe Text -> m ()
+generateDirectories
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  => Maybe Text
+  -> m [ UmuResponse ]
 generateDirectories mPathInput =
-  traverse_ ( umuWriteDirectory mPathInput )
+  traverse ( umuWriteDirectory mPathInput )
     [ srcDirReq
     , assetDirReq
     , testDirReq
@@ -65,37 +72,29 @@ generateDirectories mPathInput =
     ]
 
 generateFiles
-  :: ( MonadIO m, LogMessage m )
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Maybe Text
-  -> m ()
+  -> m [ UmuResponse ]
 generateFiles mPathInput = do
   mDefaultDirectory <- defaultDirectory
-  traverse_ ( umuWriteFile mPathInput )
-   [ srcMainFileReq
-   , mkSpagoFileReq mDefaultDirectory mPathInput
-   , packagesFileReq
-   , indexHTMLFileReq
-   , indexJSFileReq
-   , testMainFileReq
-   , titleComponentFileReq
-   , homePageFileReq
-   , packageJsonReq
-   , makeFileReq
-   , routeFileReq
-   , navigateFileReq
-   , routerFileReq
-   , appmFileReq
-   , aboutPageFileReq
-   , commonUtilFileReq
-   ]
-
--- | generate route and router files implementaiton
-genRoute :: ( MonadIO m, LogMessage m ) => PathInput -> m ()
-genRoute pathInput = do
-  umuWriteDirectory ( Just $ fromPathInput pathInput ) serviceDirReq
-  traverse_
-    ( umuWriteFile ( Just $ fromPathInput pathInput ) )
-    [ routeFileReq,  navigateFileReq, routerFileReq, appmFileReq ]
+  traverse ( umuWriteFile mPathInput )
+    [ srcMainFileReq
+    , mkSpagoFileReq mDefaultDirectory mPathInput
+    , packagesFileReq
+    , indexHTMLFileReq
+    , indexJSFileReq
+    , testMainFileReq
+    , titleComponentFileReq
+    , homePageFileReq
+    , packageJsonReq
+    , makeFileReq
+    , routeFileReq
+    , navigateFileReq
+    , routerFileReq
+    , appmFileReq
+    , aboutPageFileReq
+    , commonUtilFileReq
+    ]
 
 -- | Used when there is no directory input. It will retreive the directory name
 -- where the project is generated.
@@ -110,14 +109,17 @@ defaultDirectory = liftIO
 -----------------------------------------------------------
 -- Directory Generation
 -----------------------------------------------------------
-writeInitialDir :: ( MonadIO m, LogMessage m ) => Text -> m ()
+writeInitialDir
+  :: ( MonadIO m, MonadError UmuError m, LogMessage m )
+  => Text
+  -> m [ UmuResponse ]
 writeInitialDir loc = do
   res <- liftIO
     $ tryJust ( guard . isAlreadyExistsError )
     $ TP.mkdir ( Turtle.fromText loc )
   either
-    ( const $ logWarn warningMessage )
-    ( const $ logInfo $ "Generated " <> loc  )
+    ( const $ pure $ [ DirectoryGenerationWarning warningMessage ] )
+    ( const $ pure $ [ DirectoryGenerationSuccess ( "Generated " <> loc ) ] )
     res
   where
     warningMessage :: Text
@@ -127,10 +129,10 @@ writeInitialDir loc = do
       <> " will continue to generate the scaffold in that directory"
 
 umuWriteDirectory
-  :: ( MonadIO m, LogMessage m )
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Maybe Text
   -> WriteDirReq
-  -> m ()
+  -> m UmuResponse
 umuWriteDirectory mPathInput wdr = do
   dirResHandler ( wdr ^. writeDirReqDirName )
     =<< generateDir mPathInput ( wdr ^. writeDirReqDirName )
@@ -165,7 +167,11 @@ commonDirReq = defaultWriteDirReq
 -----------------------------------------------------------
 -- File Generation
 -----------------------------------------------------------
-umuWriteFile :: ( MonadIO m, LogMessage m ) => Maybe Text -> WriteFileReq -> m ()
+umuWriteFile
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  => Maybe Text
+  -> WriteFileReq
+  -> m UmuResponse
 umuWriteFile mPathInput wrf = do
   isExists <- isFileExists mPathInput ( wrf ^. writeFileReqFilePath )
   generateWhenFileNotExists
@@ -174,16 +180,20 @@ umuWriteFile mPathInput wrf = do
     ( wrf ^. writeFileReqFilePath )
     ( wrf ^. writeFileReqFile )
 
-writeComponentFile :: ( MonadIO m, LogMessage m ) => PathInput -> ComponentName -> m ()
+writeComponentFile
+  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  => PathInput
+  -> ComponentName
+  -> m UmuResponse
 writeComponentFile path componentName = do
   fileExists <- TP.testfile $ Turtle.fromText sanitizedFilePath
   dirExists <- TP.testdir $ Turtle.fromText sanitizedDirPath
-  if | fileExists -> logError ( sanitizedFilePath <> " already exists!" )
+  if | fileExists -> throwError $ FileGenerationError $ sanitizedFilePath <> " alread exists!"
      | dirExists && not fileExists -> do
          liftIO $ TP.writeTextFile ( Turtle.fromText sanitizedFilePath )
-          ( componentTemplate ( fromComponentName componentName ) sanitizedComponentName )
-         logInfo ( "Generated " <> sanitizedComponentName <> " component to " <> sanitizedDirPath )
-     | otherwise -> logError $ sanitizedDirPath <> " does not exist!"
+           ( componentTemplate ( fromComponentName componentName ) sanitizedComponentName )
+         pure $ FileGenerationSuccess $ "Genereated " <> sanitizedComponentName <> " component to " <> sanitizedDirPath
+     | otherwise -> throwError $ DirectoryGenerationError $ sanitizedDirPath <> " does not exists!"
   where
     sanitizedComponentName :: Text
     sanitizedComponentName =

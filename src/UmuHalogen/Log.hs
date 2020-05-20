@@ -11,7 +11,9 @@ module UmuHalogen.Log
   ) where
 
 import           Import
+-- lens
 import           Lens.Micro
+-- ansi-terminal
 import           System.Console.ANSI as ANSI
 
 data LogReason

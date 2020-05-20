@@ -1,7 +1,6 @@
 module UmuHalogen.Types
   ( PathInput
   , ComponentName
-  , PathInputError
   , WriteFileReq
   , WriteDirReq
   , fromPathInput
@@ -19,10 +18,12 @@ import           Import
 -- lens
 import           Lens.Micro
 -- text
-import qualified Data.Text       as T
-import           Text.Casing     (pascal)
+import qualified Data.Text        as T
+import           Text.Casing      (pascal)
 -- filepath
-import qualified System.FilePath as FP
+import qualified System.FilePath  as FP
+-- umu
+import           UmuHalogen.Error
 
 newtype ComponentName
   = ComponentName Text
@@ -32,13 +33,10 @@ newtype PathInput
   = PathInput Text
   deriving ( Eq, Show )
 
-data PathInputError = PathInputError
-  deriving ( Eq, Show )
-
 fromPathInput :: PathInput -> Text
 fromPathInput ( PathInput txt ) = txt
 
-validatePathInput :: Text -> Either PathInputError PathInput
+validatePathInput :: Text -> Either UmuError PathInput
 validatePathInput txt
   | FP.isValid $ T.unpack txt = Right $ PathInput txt
   | otherwise = Left PathInputError
