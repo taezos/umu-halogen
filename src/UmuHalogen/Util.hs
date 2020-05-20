@@ -1,5 +1,5 @@
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module UmuHalogen.Util
   ( mkPathName
   , isFileExists
@@ -63,22 +63,22 @@ generateWhenFileNotExists isExists mPathInput filePath file
   | isExists = throwError $ FileGenerationError $ filePath <> " already exists!"
   | otherwise = generateFile mPathInput filePath file
 
--- Right is considered the success case here, and means the directory was
--- created. Left will be the error.
-generateDir :: MonadIO m => Maybe Text -> Text -> m ( Either () () )
+-- Left will be the error.
+generateDir ::  MonadIO m => Maybe Text -> Text -> m ( Either () ( Text -> UmuResponse ) )
 generateDir mPathInput dirName = liftIO
   $ tryJust ( guard . isAlreadyExistsError )
   $ TP.mkdir ( Turtle.fromText $ mkPathName mPathInput dirName )
+  *> ( pure DirectoryGenerationSuccess )
 
 -- Directory generation response handler
 dirResHandler
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Text
-  -> Either () ()
+  -> Either () ( Text -> UmuResponse )
   -> m UmuResponse
 dirResHandler dirName res = either
   ( const $ throwError $ DirectoryGenerationError $ dirName <> " directory already exists!" )
-  ( const $ pure $ DirectoryGenerationSuccess $ "Generated " <> dirName )
+  ( pure . ( $ "Generated " <> dirName ) )
   res
 
 toPascalCase :: Text -> Text
