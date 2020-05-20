@@ -1,6 +1,6 @@
 module UmuHalogen.Capability.Log where
 
-import           Import         hiding (log)
+import           Import
 -- lens
 import           Lens.Micro
 -- umu

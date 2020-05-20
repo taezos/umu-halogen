@@ -14,10 +14,11 @@ module UmuHalogen.Util
   , splitAtPathSeparator
   ) where
 
+import           Control.Exception         (tryJust)
 import           Control.Monad.Except
 import           Import
 -- text
-import           Data.Char
+import           Data.Char                 (isLower)
 import qualified Data.Text                 as T
 import           Text.Casing               (pascal)
 -- turtle
@@ -25,6 +26,8 @@ import qualified Turtle
 import qualified Turtle.Prelude            as TP
 --filepath
 import qualified System.FilePath           as FP
+-- system
+import           System.IO.Error           (isAlreadyExistsError)
 -- umu-halogen
 import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error
@@ -85,10 +88,10 @@ discardFirstDot :: Text -> Maybe ( Char, Text )
 discardFirstDot = T.uncons
 
 filterLower :: [ Text ]  -> [ Text ]
-filterLower = filter ( not . all isLower )
+filterLower = filter ( not . T.all isLower )
 
 concatWithDot :: [ Text ] -> Text
-concatWithDot = concat . fmap ( "." <> )
+concatWithDot = T.concat . fmap ( "." <> )
 
 splitAtPathSeparator :: Text -> [ Text ]
 splitAtPathSeparator = T.split ( FP.pathSeparator == )

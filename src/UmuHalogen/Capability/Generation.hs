@@ -9,6 +9,7 @@ module UmuHalogen.Capability.Generation
   -- , genRoute
   ) where
 
+import           Control.Exception         (tryJust)
 import           Control.Monad.Except
 import           Import
 -- lens
@@ -19,6 +20,8 @@ import qualified Data.Text                 as T
 import qualified System.FilePath           as FP
 -- directory
 import qualified System.Directory          as Directory
+-- system
+import           System.IO.Error           (isAlreadyExistsError)
 -- turtle
 import qualified Turtle
 import           Turtle.Prelude            as TP
@@ -206,13 +209,13 @@ writeComponentFile path componentName = do
           . fromPathInput $ path )
 
     sanitizedDirPath :: Text
-    sanitizedDirPath = snoc ( fromPathInput path ) FP.pathSeparator
+    sanitizedDirPath = T.snoc ( fromPathInput path ) FP.pathSeparator
 
     pursFileName :: Text
     pursFileName = ( fromComponentName componentName ) <> ".purs"
 
     sanitizedFilePath :: Text
-    sanitizedFilePath = snoc ( fromPathInput path ) FP.pathSeparator
+    sanitizedFilePath = T.snoc ( fromPathInput path ) FP.pathSeparator
       <> pursFileName
 
 appmFileReq :: WriteFileReq

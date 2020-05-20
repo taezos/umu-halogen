@@ -1,9 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 module UmuHalogen.TH where
 
-import           ClassyPrelude
 import           Data.FileEmbed             (embedFile, makeRelativeToProject)
 import           Data.Text.Encoding         as TE
+import           Import
 import           Language.Haskell.TH.Syntax (Exp, Q)
 
 embedFileUtf8 :: FilePath -> Q Exp

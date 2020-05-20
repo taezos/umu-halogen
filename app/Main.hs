@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import           ClassyPrelude
+import           Relude
 import           UmuHalogen
 
 main :: IO ()

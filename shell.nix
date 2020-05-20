@@ -5,7 +5,7 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, ansi-terminal, base, bytestring
-      , classy-prelude, file-embed, microlens, mtl
+      , relude, file-embed, microlens, mtl
       , optparse-applicative, stdenv, template-haskell, text
       , transformers, turtle, filepath, casing, directory
       }:
@@ -16,11 +16,11 @@ let
         isLibrary = true;
         isExecutable = true;
         libraryHaskellDepends = [
-          ansi-terminal base bytestring classy-prelude file-embed microlens
+          ansi-terminal base bytestring relude file-embed microlens
           mtl optparse-applicative template-haskell text
           transformers turtle filepath casing directory
         ];
-        executableHaskellDepends = [ base classy-prelude ];
+        executableHaskellDepends = [ base relude ];
         license = "unknown";
         hydraPlatforms = stdenv.lib.platforms.none;
       };

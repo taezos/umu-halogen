@@ -4,7 +4,7 @@ module Import
   , appName
   ) where
 
-import           ClassyPrelude as X
+import           Relude as X
 
 appName :: Text
 appName = "umu-halogen"

@@ -11,6 +11,8 @@ module UmuHalogen.Log
   ) where
 
 import           Import
+-- text
+import qualified Data.Text           as T
 -- lens
 import           Lens.Micro
 -- ansi-terminal
@@ -53,9 +55,9 @@ mkLog reason msg = do
 mkTerminalLog :: MonadIO m => Text -> LogReason -> Text -> m ()
 mkTerminalLog msg reason logHeader = do
   liftIO $ ANSI.setSGR [ ANSI.SetColor ANSI.Foreground ANSI.Dull ( reasonToColor reason ) ]
-  putStr logHeader
+  putStr $ T.unpack logHeader
   liftIO $ ANSI.setSGR []
-  putStrLn msg
+  putStrLn $ T.unpack msg
   where
     reasonToColor :: LogReason -> Color
     reasonToColor lr = case lr of

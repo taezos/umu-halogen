@@ -37,7 +37,7 @@ library
                      , UmuHalogen.Parser.Command
                      , Paths_umu_halogen
   build-depends:       base >=4.12 && <4.14
-                     , classy-prelude
+                     , relude
                      , transformers
                      , mtl
                      , text
@@ -55,6 +55,7 @@ library
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude
                      , OverloadedStrings
+                     , StrictData
   ghc-options:
     -Wall
     -j4
@@ -67,7 +68,7 @@ executable umu-halogen
   -- other-extensions:
   build-depends:       base >=4.12 && <4.14
                      , umu-halogen
-                     , classy-prelude
+                     , relude
   hs-source-dirs:      app
   default-language:    Haskell2010
   default-extensions:  NoImplicitPrelude
