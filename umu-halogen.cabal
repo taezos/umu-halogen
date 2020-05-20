@@ -57,7 +57,8 @@ library
                      , OverloadedStrings
   ghc-options:
     -Wall
-    -j6
+    -j4
+    -O0
 
 
 executable umu-halogen
@@ -75,4 +76,4 @@ executable umu-halogen
     -threaded
     -rtsopts
     -with-rtsopts=-N
-    -j6
+    -j4
