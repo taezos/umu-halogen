@@ -3,11 +3,12 @@ module UmuHalogen.Templates where
 
 import           Import
 -- text
-import qualified Data.Text       as T
-import           Text.Casing     (camel)
+import qualified Data.Text        as T
+import           Text.Casing      (camel)
 -- umu-halogen
 import           UmuHalogen.TH
-import           UmuHalogen.Util (toPascalCase)
+import           UmuHalogen.Types
+import           UmuHalogen.Util  (toPascalCase)
 
 --------------------------------------------------------------------------------
 -- | Files
@@ -64,7 +65,7 @@ utilFile = $(embedFileUtf8 "templates/CommonUtil.purs")
 -- context
 --------------------------------------------------------------------------------
 componentTemplate
-  :: Text -- raw component name
+  :: ComponentName -- raw component name
   -> Text -- sanitized component name
   -> Text
 componentTemplate rawComponentName componentName = unlines
@@ -78,20 +79,22 @@ componentTemplate rawComponentName componentName = unlines
   , mempty
   , "type Slot p = forall query. H.Slot query Void p"
   , mempty
-  , "_" <> toCamelCase rawComponentName <> " :: SProxy \"" <> toCamelCase rawComponentName <> "\""
-  , "_" <> toCamelCase rawComponentName <> " = SProxy"
+  , "_" <> mkRawComponentName rawComponentName <> " :: SProxy \"" <>  mkRawComponentName rawComponentName <> "\""
+  , "_" <> mkRawComponentName rawComponentName <> " = SProxy"
   , mempty
   , "component :: forall q i o m. H.Component HH.HTML q i o m"
   , "component = "
   , "  H.mkComponent"
   , "    { initialState: identity"
-  , "    , render: const $ HH.h1_ [ HH.text \"" <> toPascalCase rawComponentName <> " Component\" ]"
+  , "    , render: const $ HH.h1_ [ HH.text \"" <> ( toPascalCase $ fromComponentName rawComponentName ) <> " Component\" ]"
   , "    , eval: H.mkEval H.defaultEval"
   , "    }"
   ]
   where
     toCamelCase :: Text -> Text
     toCamelCase = T.pack . camel . T.unpack
+    mkRawComponentName :: ComponentName -> Text
+    mkRawComponentName = toCamelCase . fromComponentName
 
 spagoTemplate :: Text -> Text
 spagoTemplate projectName = unlines

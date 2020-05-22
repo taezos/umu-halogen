@@ -84,6 +84,7 @@ dirResHandler dirName res = either
 toPascalCase :: Text -> Text
 toPascalCase = T.pack . pascal . T.unpack
 
+-- manipulate pat
 discardFirstDot :: Text -> Maybe ( Char, Text )
 discardFirstDot = T.uncons
 

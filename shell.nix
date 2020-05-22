@@ -7,7 +7,7 @@ let
   f = { mkDerivation, ansi-terminal, base, bytestring
       , relude, file-embed, microlens, mtl
       , optparse-applicative, stdenv, template-haskell, text
-      , transformers, turtle, filepath, casing, directory
+      , transformers, turtle, filepath, casing, directory, parsec, purescript
       }:
       mkDerivation {
         pname = "umu-halogen";
@@ -18,7 +18,7 @@ let
         libraryHaskellDepends = [
           ansi-terminal base bytestring relude file-embed microlens
           mtl optparse-applicative template-haskell text
-          transformers turtle filepath casing directory
+          transformers turtle filepath casing directory parsec purescript
         ];
         executableHaskellDepends = [ base relude ];
         license = "unknown";
@@ -32,7 +32,5 @@ let
   variant = if doBenchmark then pkgs.haskell.lib.doBenchmark else pkgs.lib.id;
 
   drv = variant (haskellPackages.callPackage f {});
-
 in
-
   if pkgs.lib.inNixShell then drv.env else drv

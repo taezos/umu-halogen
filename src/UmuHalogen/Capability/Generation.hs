@@ -28,6 +28,7 @@ import           Turtle.Prelude            as TP
 -- umu
 import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error
+import           UmuHalogen.Parser.Path
 import           UmuHalogen.Templates
 import           UmuHalogen.Types
 import           UmuHalogen.Util
@@ -191,23 +192,16 @@ writeComponentFile
 writeComponentFile path componentName = do
   fileExists <- TP.testfile $ Turtle.fromText sanitizedFilePath
   dirExists <- TP.testdir $ Turtle.fromText sanitizedDirPath
-  if | fileExists -> throwError $ FileGenerationError $ sanitizedFilePath <> " alread exists!"
-     | dirExists && not fileExists -> do
-         liftIO $ TP.writeTextFile ( Turtle.fromText sanitizedFilePath )
-           ( componentTemplate ( fromComponentName componentName ) sanitizedComponentName )
-         pure $ FileGenerationSuccess $ "Genereated " <> sanitizedComponentName <> " component to " <> sanitizedDirPath
-     | otherwise -> throwError $ DirectoryGenerationError $ sanitizedDirPath <> " does not exists!"
+  if | fileExists -> throwError $ FileGenerationError $ sanitizedFilePath <> " already exists!"
+     | dirExists && not fileExists -> case mkModuleName path componentName of
+         Left _                    -> throwError PathInputError
+         Right componentModuleName -> do
+           liftIO $ TP.writeTextFile ( Turtle.fromText sanitizedFilePath ) ( componentTemplate componentName componentModuleName )
+           pure $ FileGenerationSuccess $ "Generated " <> componentModuleName <> " component to " <> sanitizedDirPath
+     | otherwise -> throwError
+       $ DirectoryGenerationError
+       $ sanitizedDirPath <> " does not exists!"
   where
-    sanitizedComponentName :: Text
-    sanitizedComponentName =
-      maybe mempty ( <> "." <> ( fromComponentName componentName ))
-      $ snd
-      <$> ( discardFirstDot
-          . concatWithDot
-          . filterLower
-          . splitAtPathSeparator
-          . fromPathInput $ path )
-
     sanitizedDirPath :: Text
     sanitizedDirPath = T.snoc ( fromPathInput path ) FP.pathSeparator
 
