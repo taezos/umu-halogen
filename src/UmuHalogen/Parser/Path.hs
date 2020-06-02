@@ -4,15 +4,12 @@ module UmuHalogen.Parser.Path
 
 import           Import
 -- text
-import qualified Data.Text           as T
+import qualified Data.Text        as T
 -- filepath
-import qualified System.FilePath     as FP
+import qualified System.FilePath  as FP
 -- parsec
-import           Text.Parsec         (ParsecT)
-import qualified Text.Parsec         as Parsec
--- purescript
-import           Language.PureScript (ModuleName (..), ProperName (..),
-                                      runModuleName)
+import           Text.Parsec      (ParsecT)
+import qualified Text.Parsec      as Parsec
 -- umu
 import           UmuHalogen.Types
 
@@ -21,15 +18,18 @@ import           UmuHalogen.Types
 -- will result to Component.Button.Blue
 mkModuleName :: PathInput -> ComponentName -> Either Parsec.ParseError Text
 mkModuleName path componentName =
-  runModuleName <$> ModuleName . filterEmptyProperName <$> Parsec.parse
-    ( pathParser $ fromComponentName componentName ) "( unknown )"
+  -- parse the path content then intercalite with dot
+  T.intercalate "." . removeEmptyText <$> Parsec.parse
+    ( pathParser $ fromComponentName componentName )
+    "( unknown )"
     ( T.unpack $ fromPathInput path )
 
-pathParser :: Text -> ParsecT String st Identity [ ProperName a ]
+pathParser :: Text -> ParsecT String st Identity [ Text ]
 pathParser txt = do
+  -- parsing the items between the path separator that are pascal cased.
+  -- eg. example/src/Component/Button will result in [ "Component", "Button" ]
   p <- Parsec.sepBy pathContent ( Parsec.char FP.pathSeparator )
-  pure
-    $ ( ProperName . T.pack ) <$> ( p <> ( singleton $ T.unpack txt ) )
+  pure $ T.pack <$> p <> ( singleton $ T.unpack txt )
   where
     singleton :: a -> [a]
     singleton = pure
@@ -44,11 +44,8 @@ skipLower = Parsec.skipMany Parsec.lower
   >> Parsec.skipMany ( Parsec.oneOf symbols )
   >> Parsec.skipMany Parsec.lower
 
--- skipping unwanted characters returns an empty string and it results to
--- ProperName [{ runProperName = "" }]. This will filter out those empty
--- ProperNames.
-filterEmptyProperName :: [ ProperName a ] -> [ ProperName a ]
-filterEmptyProperName = filter (\pName -> ( runProperName pName ) /= "" )
+removeEmptyText :: [ Text ] -> [ Text ]
+removeEmptyText = filter ( not . T.null )
 
 symbols :: String
 symbols = ":!#$%&*+.<=>?@^|-~"

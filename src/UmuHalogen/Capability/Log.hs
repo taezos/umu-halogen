@@ -2,9 +2,10 @@ module UmuHalogen.Capability.Log where
 
 import           Import
 -- lens
-import           Lens.Micro
+import           Control.Lens.Operators
 -- umu
-import           UmuHalogen.Log
+import           UmuHalogen.Log         hiding (LogMessage)
+import           UmuHalogen.Optics
 
 class Monad m => LogMessage m where
   logMessage :: Log -> m ()

@@ -3,20 +3,20 @@ module UmuHalogen.Types
   , ComponentName
   , WriteFileReq
   , WriteDirReq
+  , RouteName
+  , FileExistence(..)
   , fromPathInput
   , validatePathInput
   , toComponentName
   , fromComponentName
   , defaultWriteFileReq
   , defaultWriteDirReq
-  , writeFileReqFilePath
-  , writeFileReqFile
-  , writeDirReqDirName
+  , toRouteName
+  , fromRouteName
+  , boolToFileExistence
   ) where
 
 import           Import
--- lens
-import           Lens.Micro
 -- text
 import qualified Data.Text        as T
 import           Text.Casing      (pascal)
@@ -25,6 +25,9 @@ import qualified System.FilePath  as FP
 -- umu
 import           UmuHalogen.Error
 
+newtype RouteName = RouteName Text
+  deriving ( Eq, Show )
+
 newtype ComponentName
   = ComponentName Text
   deriving ( Eq, Show )
@@ -32,6 +35,12 @@ newtype ComponentName
 newtype PathInput
   = PathInput Text
   deriving ( Eq, Show )
+
+toRouteName :: Text -> RouteName
+toRouteName = RouteName . T.pack . pascal . T.unpack
+
+fromRouteName :: RouteName -> Text
+fromRouteName ( RouteName txt ) = txt
 
 fromPathInput :: PathInput -> Text
 fromPathInput ( PathInput txt ) = txt
@@ -64,17 +73,11 @@ data WriteDirReq = WriteDirReq
 defaultWriteDirReq :: WriteDirReq
 defaultWriteDirReq = WriteDirReq mempty
 
------------------------------------------------------------
--- lens
------------------------------------------------------------
-writeFileReqFilePath :: Lens' WriteFileReq Text
-writeFileReqFilePath fn wrf@WriteFileReq{ _writeFileReqFilePath = filePath } =
-  fn filePath <&> \newFilePath -> wrf { _writeFileReqFilePath = newFilePath }
+data FileExistence
+  = FileExist
+  | FileNotExist
+  deriving ( Eq, Show )
 
-writeFileReqFile :: Lens' WriteFileReq Text
-writeFileReqFile fn wrf@WriteFileReq{ _writeFileReqFile = file } =
-  fn file <&> \newFile -> wrf { _writeFileReqFile = newFile }
-
-writeDirReqDirName :: Lens' WriteDirReq Text
-writeDirReqDirName fn wdr@WriteDirReq{ _writeDirReqDirName = dirName } =
-  fn dirName <&>  \newDirName -> wdr { _writeDirReqDirName = newDirName }
+-- | True will return FileExists, FileNotExist otherwise
+boolToFileExistence :: Bool -> FileExistence
+boolToFileExistence b = if b then FileExist  else FileNotExist

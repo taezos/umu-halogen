@@ -31,6 +31,7 @@ import           System.IO.Error           (isAlreadyExistsError)
 -- umu-halogen
 import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error
+import           UmuHalogen.Types
 
 mkPathName :: Maybe Text -> Text -> Text
 mkPathName mDirPathInput filePath =
@@ -38,9 +39,9 @@ mkPathName mDirPathInput filePath =
   -- then generate in the current directory.
   maybe "./" (\loc -> "./" <> loc <> "/") mDirPathInput <> filePath
 
-isFileExists :: MonadIO m => Maybe Text -> Text -> m Bool
-isFileExists mPathInput filePath =
-  TP.testfile $ Turtle.fromText ( mkPathName mPathInput filePath )
+isFileExists :: MonadIO m => Maybe PathInput -> Text -> m FileExistence
+isFileExists mPathInput filePath = fmap boolToFileExistence <$>
+  TP.testfile $ Turtle.fromText ( mkPathName ( fromPathInput <$> mPathInput ) filePath )
 
 generateFile
   :: ( MonadIO m, LogMessage m )
@@ -54,17 +55,22 @@ generateFile mPathInput filePath file = do
 
 generateWhenFileNotExists
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
-  => Bool
-  -> Maybe Text
+  => FileExistence
+  -> Maybe PathInput
   -> Text
   -> Text
   -> m UmuResponse
-generateWhenFileNotExists isExists mPathInput filePath file
-  | isExists = throwError $ FileGenerationError $ filePath <> " already exists!"
-  | otherwise = generateFile mPathInput filePath file
+generateWhenFileNotExists fileExistence mPathInput filePath file =
+  case fileExistence of
+    FileExist -> throwError $ FileGenerationError $ filePath <> " already exists!"
+    FileNotExist -> generateFile ( fromPathInput <$> mPathInput ) filePath file
 
 -- Left will be the error.
-generateDir ::  MonadIO m => Maybe Text -> Text -> m ( Either () ( Text -> UmuResponse ) )
+generateDir
+  ::  MonadIO m
+  => Maybe Text
+  -> Text
+  -> m ( Either () ( Text -> UmuResponse ) )
 generateDir mPathInput dirName = liftIO
   $ tryJust ( guard . isAlreadyExistsError )
   $ TP.mkdir ( Turtle.fromText $ mkPathName mPathInput dirName )

@@ -23,10 +23,14 @@ runAppM comm = runReaderT ( unAppM $ convertApp comm ) comm
 convertApp :: MonadIO m => Command -> AppM m [ UmuResponse ]
 convertApp comm =
   case comm of
-    CommandInit mPath -> generateProject mPath
+    CommandInit mPath -> either throwError generateProject ( sequenceA mPath )
     CommandComponent path componentName -> either
       throwError
       ( ( pure <$> ) . flip generateComponent componentName )
+      path
+    CommandRoute path routeName -> either
+      throwError
+      ( ( pure <$> ) . flip generateRoute routeName )
       path
 
 startApp :: IO ()
@@ -43,6 +47,7 @@ startApp = do
 instance MonadIO m => ManageGeneration ( AppM m ) where
   generateProject = genProject
   generateComponent = genComponent
+  generateRoute = genRoute
 
 instance MonadIO m => LogMessage ( AppM m ) where
   logMessage = logMessageImpl
