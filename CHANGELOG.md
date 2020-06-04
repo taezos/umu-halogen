@@ -86,3 +86,39 @@ the parent directory name as project name
 
 * Refactored file and directory generation to only contain the information about the file to
   be generated. The generation function is now separated.
+
+## v0.2.0.4 -- 2020-06-04
+
+### Features
+
+* `umu-halogen route [RELATIVE_PATH_TO_PROJECT] [ROUTE_NAME]` will generate a
+  new route. It will add the `[ROUTE_NAME]` as a data constructor to `data
+  Route`, and also update the `routeCoded` with the new route.
+
+### Refactor
+
+* umu-halogen is now in it's own directory, on the same level as
+  `purescript-ast` and `purescript-cst`. Then a `cabal.project` coordinates all
+  of these projects.
+
+* Extracted `purescript-ast` and `purescript-cst`, and deleted `purescript`
+  private dependencies. This was done so it was easier to build with nix.
+
+* `mkModuleName` fixed. `Module [ ProperName Namespace ]` is changed to `Module Text`.
+
+* created newtypes like `LinesState` instead of relying on booleans whether code 
+  needs to go to a new line. `SrcLineHead` to be more descriptive instead of
+  just using `[ Int ]`.
+
+* switched from `classy-prelude` to `relude`.
+
+* Updated app representation to include `ReaderT`.
+
+* Created a sum type that represents all successful operations.
+
+* Created a sum type that represents all fail operations.
+
+* Errors are propagated all the way to the surface of the app, and all error
+  handling is done there. 
+
+* path parsing is updated to use parsec.
