@@ -1,5 +1,5 @@
 build:
-	cabal new-build
+	cabal new-build all
 
 clean:
-	rm -rf example dist-newstyle
+	rm -rf example umu-halogen/dist-newstyle

@@ -1,3 +1,0 @@
-[submodule "purescript"]
-	path = purescript
-	url = git@github.com:taezos/purescript.git
