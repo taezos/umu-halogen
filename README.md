@@ -13,21 +13,26 @@ Available options:
 Available commands:
   init                     Initialize scaffold
   component                Generate a component
+  route                    Generate a route
 ```
 
 ### Installation with cabal
-First, clone the repository, then run these commands inside the project:
+First, clone the repository:
+``` shell
+git repo https://github.com/taezos/umu-halogen.git
+```
+Then run these commands inside the project:
 ```shell
 cabal new-build
 cabal new-install exe:umu-halogen # installs to ~/.cabal/bin
 ```
 
 ### Installation with Nix
-clone the repo
+First, clone the repository:
 ``` shell
 git repo https://github.com/taezos/umu-halogen.git
 ```
-
+Then run these commands inside the project:
 ``` shell
 nix-env -f default.nix -i
 ```
