@@ -72,7 +72,8 @@
 ** DONE fix mkModuleName
 - fix parsing in mkModuleName. ~ModuleName~'s constructor has updated from
   ~ModuleName [ PropareName Namespace ]~ to ~ModuleName Text~
-** TODO Generated route in routeCodec, not kebab-case
+** DONE Generated route in routeCodec, not kebab-case
+- generated route in ~routeCodec~ is not in kebab-case
 * Other Tasks
 ** DONE Nix Build
 - Set up nix files so project can be built with nix.

@@ -7,6 +7,7 @@ import           Import
 -- text
 import qualified Data.Text                     as T
 import           Text.Casing                   (kebab, pascal)
+import qualified  Data.Char as Char
 -- lens
 import           Control.Lens.Operators
 import           Control.Lens.Prism
@@ -272,7 +273,7 @@ mkRouteItem newRoute =
             , tokTrailingComments = [ Space 1 ]
             }
           , tokValue = TokString
-            ( T.pack $ kebab $ T.unpack $ T.toLower newRoute )
+            ( T.pack $ fmap Char.toLower . kebab $ T.unpack $ newRoute )
             ( mkString $ T.toLower newRoute )
           }
         ) (  mkString $ T.toLower newRoute )
