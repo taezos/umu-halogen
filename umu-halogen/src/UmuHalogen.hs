@@ -3,10 +3,16 @@
 {-# LANGUAGE ScopedTypeVariables        #-}
 module UmuHalogen ( startApp ) where
 
-import           Control.Monad.Except
+-- prelude
 import           Import
+
+-- mtl
+import           Control.Monad.Except
+
+-- optparse-applicative
 import           Options.Applicative
--- umu
+
+-- umu-halogen
 import           UmuHalogen.Capability.Generation
 import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error

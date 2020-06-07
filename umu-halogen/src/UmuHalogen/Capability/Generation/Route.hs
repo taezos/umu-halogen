@@ -6,7 +6,9 @@ module UmuHalogen.Capability.Generation.Route
 import           Import
 -- text
 import qualified Data.Text                     as T
+-- casing
 import           Text.Casing                   (kebab, pascal)
+-- char
 import qualified  Data.Char as Char
 -- lens
 import           Control.Lens.Operators
@@ -20,14 +22,12 @@ import           Language.PureScript.PSString  (mkString)
 import           UmuHalogen.Optics
 
 updateRouteModule :: Module () -> Text -> Module ()
-updateRouteModule module_ newRoute =
-  module_
-    { modDecls =
-      ( updateDeclaration
+updateRouteModule module_ newRoute = module_
+  & modDeclsL
+  .~ ( updateDeclaration
         <$> ( getRoute module_ )
-        <*> ( pure $ sepTailUpdate module_ ( isNewLine dataSrcLineHead dataSrcLineTail ) )
-      ) <> ( getNotRoute module_ )
-    }
+        <*> ( pure $ sepTailUpdate module_ ( isNewLine dataSrcLineHead dataSrcLineTail ) ))
+  <> ( getNotRoute module_ )
   where
     routeDataType :: Text
     routeDataType = "Route"

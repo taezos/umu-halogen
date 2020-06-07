@@ -26,3 +26,4 @@ mkCustomLenses ''Labeled
 mkCustomLenses ''Where
 mkCustomLenses ''Wrapped
 mkCustomLenses ''Separated
+mkCustomLenses ''Module
