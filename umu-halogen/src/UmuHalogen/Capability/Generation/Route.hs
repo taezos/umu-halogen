@@ -9,7 +9,7 @@ import qualified Data.Text                     as T
 -- casing
 import           Text.Casing                   (kebab, pascal)
 -- char
-import qualified  Data.Char as Char
+import qualified Data.Char                     as Char
 -- lens
 import           Control.Lens.Operators
 import           Control.Lens.Prism
@@ -196,110 +196,17 @@ updateRouteCodec routeName module_ =
 
 mkRouteItem :: Text -> ( SourceToken, RecordLabeled ( Expr () ))
 mkRouteItem newRoute =
-  ( SourceToken
-    { tokAnn = TokenAnn
-      { tokRange = SourceRange
-        { srcStart = SourcePos
-          { srcLine = 0
-          , srcColumn = 0
-          }
-        , srcEnd = SourcePos
-          { srcLine = 0
-          , srcColumn = 0
-          }
-        }
-      , tokLeadingComments = [ Line LF , Space 2 ]
-      , tokTrailingComments = [ Space 1 ]
-      }
-    , tokValue = TokComma
-    }
-  , RecordField
-    ( Label
-      { lblTok = SourceToken
-        { tokAnn = TokenAnn
-          { tokRange = SourceRange
-            { srcStart = SourcePos
-              { srcLine = 0
-              , srcColumn = 0
-              }
-            , srcEnd = SourcePos
-              { srcLine = 0
-              , srcColumn = 0
-              }
-            }
-          , tokLeadingComments = []
-          , tokTrailingComments = []
-          }
-        , tokValue = TokString
-            ( mkNewRoute newRoute )
-            ( mkString $ T.pack $ pascal $ T.unpack  newRoute )
-        }
-      , lblName = mkString $ T.pack $ pascal $ T.unpack newRoute
-      }
-    )
-    ( SourceToken
-      { tokAnn = TokenAnn
-        { tokRange = SourceRange
-          { srcStart = SourcePos
-            { srcLine = 0
-            , srcColumn = 0
-            }
-          , srcEnd = SourcePos
-            { srcLine = 0
-            , srcColumn = 0
-            }
-          }
-        , tokLeadingComments = []
-        , tokTrailingComments = [ Space 1 ]
-        }
-      , tokValue = TokOperator [] ":"
-      }
-    )
-    ( ExprOp ()
-      ( ExprString ()
-        ( SourceToken
-          { tokAnn = TokenAnn
-            { tokRange = SourceRange
-              { srcStart = SourcePos
-                { srcLine = 0
-                , srcColumn = 0
-                }
-              , srcEnd = SourcePos
-                { srcLine = 0
-                , srcColumn = 0
-                }
-              }
-            , tokLeadingComments = []
-            , tokTrailingComments = [ Space 1 ]
-            }
-          , tokValue = TokString
-            ( T.pack $ fmap Char.toLower . kebab $ T.unpack $ newRoute )
-            ( mkString $ T.toLower newRoute )
-          }
-        ) (  mkString $ T.toLower newRoute )
-      )
-      ( QualifiedName
-        { qualTok = SourceToken
-          { tokAnn = TokenAnn
-            { tokRange = SourceRange
-              { srcStart = SourcePos
-                { srcLine = 0
-                , srcColumn = 0
-                }
-              , srcEnd = SourcePos
-                { srcLine = 0
-                , srcColumn = 0
-                }
-              }
-            , tokLeadingComments = []
-            , tokTrailingComments = [ Space 1 ]
-            }
-          , tokValue = TokOperator [] "/"
-          }
-        , qualModule = Nothing
-        , qualName = OpName { runOpName = "/" }
-        }
-      )
+  ( commaToken
+  , recordField
+    colonToken
+    recordValue
+  )
+  where
+    mkNewRoute :: Text -> Text
+    mkNewRoute = T.pack . pascal . T.unpack
+
+    noArgsIdent :: Expr ()
+    noArgsIdent =
       ( ExprIdent ()
         ( QualifiedName
           { qualTok = SourceToken
@@ -326,8 +233,117 @@ mkRouteItem newRoute =
           }
         )
       )
-    )
-  )
-  where
-    mkNewRoute :: Text -> Text
-    mkNewRoute = T.pack . pascal . T.unpack
+
+    slashToken :: QualifiedName ( OpName a )
+    slashToken = QualifiedName
+      { qualTok = SourceToken
+        { tokAnn = TokenAnn
+          { tokRange = SourceRange
+            { srcStart = SourcePos
+              { srcLine = 0
+              , srcColumn = 0
+              }
+            , srcEnd = SourcePos
+              { srcLine = 0
+              , srcColumn = 0
+              }
+            }
+          , tokLeadingComments = []
+          , tokTrailingComments = [ Space 1 ]
+          }
+        , tokValue = TokOperator [] "/"
+        }
+      , qualModule = Nothing
+      , qualName = OpName { runOpName = "/" }
+      }
+
+    colonToken :: SourceToken
+    colonToken = SourceToken
+      { tokAnn = TokenAnn
+        { tokRange = SourceRange
+          { srcStart = SourcePos
+            { srcLine = 0
+            , srcColumn = 0
+            }
+          , srcEnd = SourcePos
+            { srcLine = 0
+            , srcColumn = 0
+            }
+          }
+        , tokLeadingComments = []
+        , tokTrailingComments = [ Space 1 ]
+        }
+      , tokValue = TokOperator [] ":"
+      }
+
+    commaToken :: SourceToken
+    commaToken = SourceToken
+      { tokAnn = TokenAnn
+        { tokRange = SourceRange
+          { srcStart = SourcePos
+            { srcLine = 0
+            , srcColumn = 0
+            }
+          , srcEnd = SourcePos
+            { srcLine = 0
+            , srcColumn = 0
+            }
+          }
+        , tokLeadingComments = [ Line LF , Space 2 ]
+        , tokTrailingComments = [ Space 1 ]
+        }
+      , tokValue = TokComma
+      }
+
+    recordField :: SourceToken -> a -> RecordLabeled a
+    recordField = RecordField
+      ( Label
+        { lblTok = SourceToken
+          { tokAnn = TokenAnn
+            { tokRange = SourceRange
+              { srcStart = SourcePos
+                { srcLine = 0
+                , srcColumn = 0
+                }
+              , srcEnd = SourcePos
+                { srcLine = 0
+                , srcColumn = 0
+                }
+              }
+            , tokLeadingComments = []
+            , tokTrailingComments = []
+            }
+          , tokValue = TokString
+              ( mkNewRoute newRoute )
+              ( mkString $ T.pack $ pascal $ T.unpack  newRoute )
+          }
+        , lblName = mkString $ T.pack $ pascal $ T.unpack newRoute
+        }
+      )
+
+    recordValue :: Expr ()
+    recordValue =
+      ( ExprOp ()
+        ( ExprString ()
+          ( SourceToken
+            { tokAnn = TokenAnn
+              { tokRange = SourceRange
+                { srcStart = SourcePos
+                  { srcLine = 0
+                  , srcColumn = 0
+                  }
+                , srcEnd = SourcePos
+                  { srcLine = 0
+                  , srcColumn = 0
+                  }
+                }
+              , tokLeadingComments = []
+              , tokTrailingComments = [ Space 1 ]
+              }
+            , tokValue = TokString
+              ( T.pack $ fmap Char.toLower . kebab $ T.unpack $ newRoute )
+              ( mkString $ T.toLower newRoute )
+            }
+          ) ( mkString $ T.toLower newRoute )
+        ) slashToken noArgsIdent
+      )
