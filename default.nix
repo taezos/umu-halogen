@@ -1,4 +1,10 @@
+{ nixpkgs ? import ./nix/pinned.nix {} }:
 let
-  nixpkgs = import ./nixpkgs.nix;
+  inherit ( nixpkgs ) pkgs;
+
+  haskellPackages = pkgs.haskellPackages.override {
+    overrides = import ./project.nix;
+  };
+
 in
-{ umu-halogen = nixpkgs.umu-halogen; }
+haskellPackages.umu-halogen
