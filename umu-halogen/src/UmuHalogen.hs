@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
 module UmuHalogen ( startApp ) where
 
 -- prelude
@@ -20,11 +19,11 @@ import           UmuHalogen.Parser.Command
 
 newtype AppM m a
   = AppM
-  { unAppM :: ReaderT Command ( ExceptT UmuError m ) a
-  } deriving ( Functor, Applicative, Monad, MonadIO, MonadError UmuError, MonadReader Command )
+  { unAppM :: ( ExceptT UmuError m ) a
+  } deriving ( Functor, Applicative, Monad, MonadIO, MonadError UmuError )
 
 runAppM :: MonadIO m => Command -> ExceptT UmuError m [ UmuResponse ]
-runAppM comm = runReaderT ( unAppM $ convertApp comm ) comm
+runAppM comm = unAppM $ convertApp comm
 
 convertApp :: MonadIO m => Command -> AppM m [ UmuResponse ]
 convertApp comm =
