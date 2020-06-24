@@ -122,3 +122,15 @@ the parent directory name as project name
   handling is done there. 
 
 * path parsing is updated to use parsec.
+
+## v0.3.0.0 -- 2020-06-24
+* Features
+  * Converted positional input to named input with flags. e.g `umu-haloge init
+    --location example`
+
+* Refactor
+  * Removed `ReaderT`, was not using env input. This will probably be re-added
+    later on.
+  * Refactored nix files so the project can be run in a pure nix-shell, and
+    continue to be built with `nix-build`
+  * Route syntax tree broken down for simplicity.
