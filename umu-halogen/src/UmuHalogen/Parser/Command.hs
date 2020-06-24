@@ -29,33 +29,46 @@ parseCommandInit = CommandInit <$> initParser
   where
     initParser :: Parser ( Maybe ( Either UmuError PathInput ) )
     initParser = optional $
-      argument ( validatePathInput <$> str ) ( metavar "LOCATION" <> help "Location to generate scaffold" )
+      option ( validatePathInput <$> str )
+      ( long "location"
+        <> short 'l'
+        <> metavar "[LOCATION]"
+        <> help "Location to generate scaffold" )
 
 parseCommandComponent :: Parser Command
 parseCommandComponent = CommandComponent <$> pathParser <*> nameParser
   where
     nameParser :: Parser ComponentName
-    nameParser = argument
+    nameParser = option
       ( toComponentName <$> str )
-      ( metavar "COMPONENT_NAME"  <> help "Name of the component to be generated" )
+      ( long "name"
+        <> short 'n'
+        <> metavar "[COMPONENT NAME]"
+        <> help "Name of the component to be generated" )
 
 parseCommandRoute :: Parser Command
 parseCommandRoute = CommandRoute <$> pathParser <*> routeNameParser
   where
     routeNameParser :: Parser RouteName
-    routeNameParser = argument
+    routeNameParser = option
       ( toRouteName <$> str )
-      ( metavar "ROUTE_NAME" <> help "Name of the route to be generated" )
+      ( long "route"
+        <> short 'r'
+        <> metavar "[ROUTE NAME]"
+        <> help "Name of the route to be generated" )
 
 pathParser :: Parser ( Either UmuError PathInput )
-pathParser = argument
+pathParser = option
   ( validatePathInput <$> str )
-  ( metavar "LOCATION" <> help "Location to generate the component" )
+  ( long "location"
+    <> short 'l'
+    <> metavar "[LOCATION]"
+    <> help "Location to generate the component" )
 
 parseVersion :: Parser ( a -> a )
 parseVersion =
   infoOption ( concat [ showVersion version ] )
-  ( short 'v' <> long "version" <> help "Show version" <> hidden )
+  ( long "version" <> short 'v' <> help "Show version" <> hidden )
 
 withInfo :: Parser Command -> String -> ParserInfo Command
 withInfo opts desc = info ( helper <*> opts ) $ progDesc desc
