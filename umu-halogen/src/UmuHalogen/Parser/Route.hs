@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 module UmuHalogen.Parser.Route
   ( parseRouteFile
+  , Module
   ) where
 
 import           Control.Monad.Except

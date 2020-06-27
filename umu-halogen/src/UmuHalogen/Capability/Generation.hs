@@ -2,29 +2,42 @@
 {-# LANGUAGE MultiWayIf       #-}
 module UmuHalogen.Capability.Generation
   ( ManageGeneration (..)
-  , genComponent
   , genProject
   , genRoute
+  , genComponent
+  , writeComponentFile
+  , generateDirectories
+  , writeInitialDir
+  , generateFiles
+  , updateRouteFile
   ) where
 
 import           Control.Exception                      (tryJust)
 import           Control.Monad.Except
 import           Import
+
 -- lens
 import           Control.Lens.Operators
+
 -- text
 import qualified Data.Text                              as T
+
 -- filepath
 import qualified System.FilePath                        as FP
+
 -- directory
 import qualified System.Directory                       as Directory
+
 -- system
 import           System.IO.Error                        (isAlreadyExistsError)
+
 -- turtle
 import qualified Turtle
 import           Turtle.Prelude                         as TP
+
 -- purescript
 import           Language.PureScript.CST.Print
+
 -- umu
 import           UmuHalogen.Capability.Generation.Route
 import           UmuHalogen.Capability.Log
@@ -37,32 +50,69 @@ import           UmuHalogen.Types
 import           UmuHalogen.Util
 
 class Monad m => ManageGeneration m where
-  generateProject :: Maybe PathInput -> m [ UmuResponse ]
-  generateComponent :: PathInput -> ComponentName -> m UmuResponse
-  generateRoute :: PathInput -> RouteName -> m UmuResponse
+  generateProject
+    :: Maybe PathInput
+    -> ( Maybe PathInput -> m [ UmuResponse ] )
+    -> ( PathInput -> m [ UmuResponse ] )
+    -> ( Maybe PathInput -> m [ UmuResponse ] )
+    -> m [ UmuResponse ]
+  generateComponent
+    :: PathInput
+    -> ComponentName
+    -> ( PathInput -> ComponentName -> m UmuResponse )
+    -> m UmuResponse
+  generateRoute
+    :: PathInput
+    -> RouteName
+    -> ( PathInput -> RouteName -> Text -> m UmuResponse )
+    -> ( Text -> m ( Module () ) )
+    -> m UmuResponse
 
 -- | generate project implementation
 genProject
-  :: ( MonadIO m, LogMessage m, ManageGeneration m, MonadError UmuError m )
+  :: ( Monad m, LogMessage m, ManageGeneration m, MonadError UmuError m )
   => Maybe PathInput
+  -> ( Maybe PathInput -> m [ UmuResponse ] )
+  -> ( PathInput -> m [ UmuResponse ] )
+  -> ( Maybe PathInput -> m [ UmuResponse ] )
   -> m [ UmuResponse ]
-genProject mPath = case mPath of
-  Nothing -> generateDirectories mPath
+genProject mPath genDirectoryEff writeInitialDirEff genFilesEff = case mPath of
+  Nothing -> genDirectoryEff mPath
   Just loc -> do
-    writeDirRes <- writeInitialDir loc
-    genDirRes <- generateDirectories mPath
-    genFilesRes <- generateFiles mPath
+    writeDirRes <- writeInitialDirEff loc
+    genDirRes <- genDirectoryEff mPath
+    genFilesRes <- genFilesEff mPath
     pure $ writeDirRes <> genDirRes <> genFilesRes
+
 
 -- | generate component implementation
 genComponent
-  :: ( MonadIO m, LogMessage m, ManageGeneration m, MonadError UmuError m )
+  :: Monad m
   => PathInput
   -> ComponentName
+  -> ( PathInput -> ComponentName -> m UmuResponse )
   -> m UmuResponse
-genComponent pathInput componentName =
-  writeComponentFile pathInput componentName
+genComponent pathInput componentName writeEff =
+  writeEff pathInput componentName
 
+-- | generate route implementation
+genRoute
+  :: Monad m
+  => PathInput
+  -> RouteName
+  -> ( PathInput -> RouteName -> Text -> m UmuResponse )
+  -> ( Text -> m ( Module () ) )
+  -> m UmuResponse
+genRoute path routeName updateRouteFileEff parseRouteFileEff = do
+  u <- updateRouteModule
+    <$> ( parseRouteFileEff ( fromPathInput path ) )
+    <*> ( pure $ fromRouteName routeName )
+  updateRouteFileEff
+    path
+    routeName
+    ( printModule $ updateRouteCodec ( fromRouteName routeName ) u )
+
+-- | generate directories that runs over IO
 generateDirectories
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Maybe PathInput
@@ -78,6 +128,7 @@ generateDirectories mPathInput =
     , commonDirReq
     ]
 
+-- | generate files that runs over IO
 generateFiles
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Maybe PathInput
@@ -102,20 +153,6 @@ generateFiles mPathInput = do
     , aboutPageFileReq
     , commonUtilFileReq
     ]
-
-genRoute
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
-  => PathInput
-  -> RouteName
-  -> m UmuResponse
-genRoute path routeName = do
-  u <- updateRouteModule
-    <$> ( parseRouteFile ( fromPathInput path ) )
-    <*> ( pure $ fromRouteName routeName )
-  updateRouteFile
-    path
-    routeName
-    ( printModule $ updateRouteCodec ( fromRouteName routeName ) u )
 
 -- | Used when there is no directory input. It will retreive the directory name
 -- where the project is generated.
@@ -149,6 +186,7 @@ writeInitialDir loc = do
       <> appName
       <> " will continue to generate the scaffold in that directory"
 
+-- | writes directory and runs it over IO
 umuWriteDirectory
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Maybe PathInput
@@ -158,30 +196,37 @@ umuWriteDirectory mPathInput wdr = do
   dirResHandler ( wdr ^. writeDirReqDirName )
     =<< generateDir ( fromPathInput <$> mPathInput ) ( wdr ^. writeDirReqDirName )
 
+-- | description of the src directory
 srcDirReq :: WriteDirReq
 srcDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src"
 
+-- | description of asset directory
 assetDirReq :: WriteDirReq
 assetDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "assets"
 
+-- | description of test directory
 testDirReq :: WriteDirReq
 testDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "test"
 
+-- | description of component directory
 componentDirReq :: WriteDirReq
 componentDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src/Component"
 
+-- | description of page directory
 pageDirReq :: WriteDirReq
 pageDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src/Page"
 
+-- | description of service directory
 serviceDirReq :: WriteDirReq
 serviceDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src/Service"
 
+-- | description of common directory
 commonDirReq :: WriteDirReq
 commonDirReq = defaultWriteDirReq
   & writeDirReqDirName .~ "src/Common"
@@ -191,6 +236,7 @@ commonDirReq = defaultWriteDirReq
 -----------------------------------------------------------
 
 -- | writes the file when they don't exist, otherwise will return an error.
+-- effect that runs on IO
 umuWriteFile
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => Maybe PathInput
@@ -204,8 +250,9 @@ umuWriteFile mPathInput wrf = do
     ( wrf ^. writeFileReqFilePath )
     ( wrf ^. writeFileReqFile )
 
+-- | write the component files and runs it in IO
 writeComponentFile
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => PathInput
   -> ComponentName
   -> m UmuResponse
@@ -232,6 +279,7 @@ writeComponentFile path componentName = do
     sanitizedFilePath = T.snoc ( fromPathInput path ) FP.pathSeparator
       <> pursFileName
 
+-- | updates the route file and runs it in IO
 updateRouteFile
   :: ( MonadIO m, LogMessage m, MonadError UmuError m )
   => PathInput
@@ -252,46 +300,55 @@ updateRouteFile dirPath routeName file = do
     routeFilePath :: Text
     routeFilePath = "src/Service/Route.purs"
 
+-- | description of AppM.purs file
 appmFileReq :: WriteFileReq
 appmFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/AppM.purs"
   & writeFileReqFile .~ appMfile
 
+-- | description of Home.purs file
 homePageFileReq :: WriteFileReq
 homePageFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Page/Home.purs"
   & writeFileReqFile .~ homePageFile
 
+-- | description of About.purs file
 aboutPageFileReq :: WriteFileReq
 aboutPageFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Page/About.purs"
   & writeFileReqFile .~ aboutFile
 
+-- | description of Route.purs file
 routeFileReq :: WriteFileReq
 routeFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Service/Route.purs"
   & writeFileReqFile .~ routeFile
 
+-- | description of Navigate.purs file
 navigateFileReq :: WriteFileReq
 navigateFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Service/Navigate.purs"
   & writeFileReqFile .~ navigateFile
 
+-- | description of Router.purs file
 routerFileReq :: WriteFileReq
 routerFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Component/Router.purs"
   & writeFileReqFile .~ routerComponentFile
 
+-- | description of Main.purs fils
 srcMainFileReq :: WriteFileReq
 srcMainFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Main.purs"
   & writeFileReqFile .~ srcMainFile
 
+-- | description of Util.purs file
 commonUtilFileReq :: WriteFileReq
 commonUtilFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Common/Util.purs"
   & writeFileReqFile .~ utilFile
 
+-- | description of spago.dhall file
 mkSpagoFileReq :: Maybe Text -> Maybe PathInput -> WriteFileReq
 mkSpagoFileReq mDirectory mPathInput = defaultWriteFileReq
   & writeFileReqFilePath .~ "spago.dhall"
@@ -303,36 +360,43 @@ mkSpagoFileReq mDirectory mPathInput = defaultWriteFileReq
       $ flip fromMaybe ( fromPathInput <$> mPathInput )
       <$> mDirectory
 
+-- | description of packages.dhall file
 packagesFileReq :: WriteFileReq
 packagesFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "packages.dhall"
   & writeFileReqFile .~ packagesDhallFile
 
+-- | description of index.html file
 indexHTMLFileReq :: WriteFileReq
 indexHTMLFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "assets/index.html"
   & writeFileReqFile .~ indexHtmlFile
 
+-- | description of index.js file
 indexJSFileReq :: WriteFileReq
 indexJSFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "assets/index.js"
   & writeFileReqFile .~ indexJS
 
+-- | description of Main.purs file
 testMainFileReq :: WriteFileReq
 testMainFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "test/Main.purs"
   & writeFileReqFile .~ testMainFile
 
+-- | description of Title.purs file
 titleComponentFileReq :: WriteFileReq
 titleComponentFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "src/Component/Title.purs"
   & writeFileReqFile .~ titleComponentFile
 
+-- | description of package.json file
 packageJsonReq :: WriteFileReq
 packageJsonReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "package.json"
   & writeFileReqFile .~ packageJsonFile
 
+-- | description of Makefile file
 makeFileReq :: WriteFileReq
 makeFileReq = defaultWriteFileReq
   & writeFileReqFilePath .~ "Makefile"

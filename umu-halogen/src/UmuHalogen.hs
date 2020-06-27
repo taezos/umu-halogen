@@ -16,6 +16,7 @@ import           UmuHalogen.Capability.Generation
 import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error
 import           UmuHalogen.Parser.Command
+import           UmuHalogen.Parser.Route
 
 newtype AppM m a
   = AppM
@@ -28,14 +29,17 @@ runAppM comm = unAppM $ convertApp comm
 convertApp :: MonadIO m => Command -> AppM m [ UmuResponse ]
 convertApp comm =
   case comm of
-    CommandInit mPath -> either throwError generateProject ( sequenceA mPath )
+    CommandInit mPath -> either
+      throwError
+      (\p -> generateProject p generateDirectories writeInitialDir generateFiles )
+      ( sequenceA mPath )
     CommandComponent path componentName -> either
       throwError
-      ( ( pure <$> ) . flip generateComponent componentName )
+      (\p -> pure <$> generateComponent p componentName writeComponentFile )
       path
     CommandRoute path routeName -> either
       throwError
-      ( ( pure <$> ) . flip generateRoute routeName )
+      (\p -> pure <$> generateRoute p routeName updateRouteFile parseRouteFile )
       path
 
 startApp :: IO ()
