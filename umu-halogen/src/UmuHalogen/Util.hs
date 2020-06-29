@@ -66,7 +66,7 @@ generateWhenFileNotExists fileExistence mPathInput filePath file =
 
 -- Left will be the error.
 generateDir
-  ::  MonadIO m
+  :: MonadIO m
   => Maybe Text
   -> Text
   -> m ( Either () ( Text -> UmuResponse ) )
@@ -77,7 +77,7 @@ generateDir mPathInput dirName = liftIO
 
 -- Directory generation response handler
 dirResHandler
-  :: ( MonadIO m, MonadError UmuError m )
+  :: ( Monad m, MonadError UmuError m )
   => Text
   -> Either () ( Text -> UmuResponse )
   -> m UmuResponse

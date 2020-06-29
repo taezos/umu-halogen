@@ -20,7 +20,7 @@ parseCommand :: Parser Command
 parseCommand = subparser $
   ( command "init" $ parseCommandInit `withInfo` "Initialize scaffold" )
   <>
-  ( command "component" $ parseCommandComponent `withInfo` "Generate a component" )
+  ( command "component" $ parseCommandComponent `withInfo` componentInfo )
   <>
   ( command "route" $ parseCommandRoute `withInfo` "Generate a route" )
 
@@ -72,3 +72,6 @@ parseVersion =
 
 withInfo :: Parser Command -> String -> ParserInfo Command
 withInfo opts desc = info ( helper <*> opts ) $ progDesc desc
+
+componentInfo :: String
+componentInfo = "Generate a component or a page."
