@@ -49,17 +49,14 @@ startApp = do
       ( fullDesc <> progDesc umuProgDesc <> header umuHeader ))
   res <- runExceptT $ runAppM comm
   either
-    ( logError . umuErrorToText )
-    ( traverse_ ( logInfo . umuResponseToText ) )
+    ( mkTerminalLogEff <=< logErrorNoEff . umuErrorToText )
+    ( traverse_ ( mkTerminalLogEff <=< logInfoNoEff . umuResponseToText ) )
     res
 
 instance MonadIO m => ManageGeneration ( AppM m ) where
   generateProject = genProject
   generateComponent = genComponent
   generateRoute = genRoute
-
-instance MonadIO m => LogMessage ( AppM m ) where
-  logMessage = logMessageImpl
 
 showHelpOnErrorExecParser :: ParserInfo a -> IO a
 showHelpOnErrorExecParser = customExecParser ( prefs showHelpOnError )

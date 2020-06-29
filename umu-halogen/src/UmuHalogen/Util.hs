@@ -14,22 +14,21 @@ module UmuHalogen.Util
   , splitAtPathSeparator
   ) where
 
-import           Control.Exception         (tryJust)
+import           Control.Exception    (tryJust)
 import           Control.Monad.Except
 import           Import
 -- text
-import           Data.Char                 (isLower)
-import qualified Data.Text                 as T
-import           Text.Casing               (pascal)
+import           Data.Char            (isLower)
+import qualified Data.Text            as T
+import           Text.Casing          (pascal)
 -- turtle
 import qualified Turtle
-import qualified Turtle.Prelude            as TP
+import qualified Turtle.Prelude       as TP
 --filepath
-import qualified System.FilePath           as FP
+import qualified System.FilePath      as FP
 -- system
-import           System.IO.Error           (isAlreadyExistsError)
+import           System.IO.Error      (isAlreadyExistsError)
 -- umu-halogen
-import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error
 import           UmuHalogen.Types
 
@@ -44,7 +43,7 @@ isFileExists mPathInput filePath = fmap boolToFileExistence <$>
   TP.testfile $ Turtle.fromText ( mkPathName ( fromPathInput <$> mPathInput ) filePath )
 
 generateFile
-  :: ( MonadIO m, LogMessage m )
+  :: MonadIO m
   => Maybe Text
   -> Text
   -> Text
@@ -54,7 +53,7 @@ generateFile mPathInput filePath file = do
   pure $ FileGenerationSuccess $ "Generated " <> filePath
 
 generateWhenFileNotExists
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => FileExistence
   -> Maybe PathInput
   -> Text
@@ -78,7 +77,7 @@ generateDir mPathInput dirName = liftIO
 
 -- Directory generation response handler
 dirResHandler
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => Text
   -> Either () ( Text -> UmuResponse )
   -> m UmuResponse

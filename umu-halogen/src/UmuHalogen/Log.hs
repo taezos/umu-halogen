@@ -1,4 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
 module UmuHalogen.Log
   ( LogReason (..)
   , LogMessage (..)
@@ -29,7 +28,7 @@ data LogMessage = LogMessage
   , _logMessageHeader :: Text
   } deriving ( Eq, Show )
 
-mkLog :: MonadIO m => LogReason -> Text -> m Log
+mkLog :: Monad m => LogReason -> Text -> m Log
 mkLog reason msg = do
   pure $ Log
     { _logReason = reason
@@ -60,21 +59,3 @@ mkTerminalLog msg reason logHeader = do
       Error -> ANSI.Red
       Warn  -> ANSI.Yellow
 
------------------------------------------------
--- lens
------------------------------------------------
--- logMessageText :: Lens' LogMessage Text
--- logMessageText fn logMessage@LogMessage{ _logMessageText = msg } =
---   fn msg <&> \newMsg -> logMessage { _logMessageText = newMsg }
-
--- logMessageHeader :: Lens' LogMessage Text
--- logMessageHeader fn logMessage@LogMessage { _logMessageHeader = header  } =
---   fn header <&> \newHeader -> logMessage { _logMessageHeader = newHeader }
-
--- logReason :: Lens' Log LogReason
--- logReason fn logR@Log{ _logReason = reason } =
---   fn reason <&> \newReason -> logR { _logReason = newReason }
-
--- logMsg :: Lens' Log LogMessage
--- logMsg fn logR@Log{ _logMsg = msg } =
---   fn msg <&> \newMessage -> logR { _logMsg = newMessage }

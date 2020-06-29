@@ -40,7 +40,6 @@ import           Language.PureScript.CST.Print
 
 -- umu
 import           UmuHalogen.Capability.Generation.Route
-import           UmuHalogen.Capability.Log
 import           UmuHalogen.Error
 import           UmuHalogen.Optics
 import           UmuHalogen.Parser.Path
@@ -70,7 +69,7 @@ class Monad m => ManageGeneration m where
 
 -- | generate project implementation
 genProject
-  :: ( Monad m, LogMessage m, ManageGeneration m, MonadError UmuError m )
+  :: ( Monad m, ManageGeneration m, MonadError UmuError m )
   => Maybe PathInput
   -> ( Maybe PathInput -> m [ UmuResponse ] )
   -> ( PathInput -> m [ UmuResponse ] )
@@ -114,7 +113,7 @@ genRoute path routeName updateRouteFileEff parseRouteFileEff = do
 
 -- | generate directories that runs over IO
 generateDirectories
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => Maybe PathInput
   -> m [ UmuResponse ]
 generateDirectories mPathInput =
@@ -130,7 +129,7 @@ generateDirectories mPathInput =
 
 -- | generate files that runs over IO
 generateFiles
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => Maybe PathInput
   -> m [ UmuResponse ]
 generateFiles mPathInput = do
@@ -168,7 +167,7 @@ defaultDirectory = liftIO
 -- Directory Generation
 -----------------------------------------------------------
 writeInitialDir
-  :: ( MonadIO m, MonadError UmuError m, LogMessage m )
+  :: ( MonadIO m, MonadError UmuError m )
   => PathInput
   -> m [ UmuResponse ]
 writeInitialDir loc = do
@@ -188,7 +187,7 @@ writeInitialDir loc = do
 
 -- | writes directory and runs it over IO
 umuWriteDirectory
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => Maybe PathInput
   -> WriteDirReq
   -> m UmuResponse
@@ -238,7 +237,7 @@ commonDirReq = defaultWriteDirReq
 -- | writes the file when they don't exist, otherwise will return an error.
 -- effect that runs on IO
 umuWriteFile
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => Maybe PathInput
   -> WriteFileReq
   -> m UmuResponse
@@ -281,7 +280,7 @@ writeComponentFile path componentName = do
 
 -- | updates the route file and runs it in IO
 updateRouteFile
-  :: ( MonadIO m, LogMessage m, MonadError UmuError m )
+  :: ( MonadIO m, MonadError UmuError m )
   => PathInput
   -> RouteName
   -> Text
